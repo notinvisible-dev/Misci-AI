@@ -46,32 +46,7 @@ Misci is a fork of [OpenCode](https://github.com/anomalyco/opencode) with rebran
 
 ## Quick Start
 
-### Desktop App
-
 Download the latest release for your platform from [Releases](https://github.com/notinvisible-dev/Misci-AI/releases).
-
-### CLI
-
-```bash
-curl -fsSL https://opencode.ai/install | bash
-```
-
-### From Source
-
-Requires [Bun](https://bun.sh) 1.3+.
-
-```bash
-git clone https://github.com/notinvisible-dev/Misci-AI.git
-cd Misci-AI
-bun install
-bun run dev
-```
-
-To run the desktop app:
-
-```bash
-bun run dev:desktop
-```
 
 ## Project Structure
 
