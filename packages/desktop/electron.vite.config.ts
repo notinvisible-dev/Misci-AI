@@ -12,7 +12,15 @@ const channel = (() => {
   return "dev"
 })()
 
-const nodePtyPkg = `@lydell/node-pty-${process.platform}-${process.arch}`
+const allNodePtyPkgs = [
+  "@lydell/node-pty",
+  "@lydell/node-pty-darwin-arm64",
+  "@lydell/node-pty-darwin-x64",
+  "@lydell/node-pty-linux-arm64",
+  "@lydell/node-pty-linux-x64",
+  "@lydell/node-pty-win32-arm64",
+  "@lydell/node-pty-win32-x64",
+]
 
 const sentry =
   process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
@@ -51,16 +59,9 @@ const require = __cjs_mod__.createRequire(import.meta.url);
 `,
         },
       },
-      externalizeDeps: { include: [nodePtyPkg] },
+      externalizeDeps: { include: allNodePtyPkgs },
     },
     plugins: [
-      {
-        name: "opencode:node-pty-narrower",
-        enforce: "pre",
-        resolveId(s) {
-          if (s === "@lydell/node-pty") return nodePtyPkg
-        },
-      },
       {
         name: "opencode:virtual-server-module",
         enforce: "pre",

@@ -269,6 +269,9 @@ export const RunCommand = effectCmd({
     const flags = yield* RuntimeFlags.Service
     const localInstance = yield* InstanceRef
     yield* Effect.promise(async () => {
+      if (args.mini || args.interactive) {
+        UI.setTerminalTitle("Misci")
+      }
       const rawMessage = [...args.message, ...(args["--"] || [])].join(" ")
       const interactive = args.mini
       const auto = args.auto || args.yolo || args["dangerously-skip-permissions"]

@@ -10,7 +10,29 @@ import { PermissionV2 } from "../permission"
 
 const TRUNCATION_GLOB = path.join(Global.Path.data, "tool-output", "*")
 const BUILD_SYSTEM =
-  "You are an AI coding agent. Help the user accomplish software engineering tasks by inspecting the workspace, making targeted changes, and using tools according to the configured permissions."
+  "You are Misci Terminal CLI, a general-purpose AI running on the user's terminal. Work directly in the user's files and system to help with software engineering tasks and anything else the user needs, using tools according to the configured permissions."
+
+const PROMPT_RESEARCH = `You are a deep research specialist. You excel at gathering and synthesizing information from the web and the local codebase.
+
+Your strengths:
+- Searching the web for up-to-date information and primary sources
+- Fetching and reading web pages, documentation, and articles
+- Searching code and text with powerful regex patterns
+- Reading and analyzing file contents
+- Tracing a question across multiple sources and cross-checking facts
+
+Guidelines:
+- Use WebSearch to find information on the web
+- Use WebFetch to read the pages, docs, and articles you find
+- Use Glob, Grep, and Read to investigate the local codebase
+- Use Bash for read-only inspection (listing directories, running non-mutating commands)
+- Iterate: start broad, then narrow down, and verify claims against primary sources
+- Prefer recent, authoritative sources; note uncertainty when sources conflict
+- Cite your sources by name and URL in your final summary
+- Do not create or edit any files, and do not run commands that modify the user's system state in any way
+- For clear communication, avoid using emojis
+
+Produce a thorough, well-organized research report and present it clearly.`
 
 const PROMPT_EXPLORE = `You are a file search specialist. You excel at thoroughly navigating and exploring codebases.
 
@@ -30,7 +52,7 @@ Guidelines:
 
 Complete the user's search request efficiently and report your findings clearly.`
 
-const PROMPT_COMPACTION = `You are a context summarization agent. You are given a conversation between a user and an agent. Your goal is to produce a structured summary matching the format specified so another coding agent can continue the work.
+const PROMPT_COMPACTION = `You are a context summarization agent. You are given a conversation between a user and an agent. Your goal is to produce a structured summary matching the format specified so another agent can continue the work.
 
 Always follow the exact output structure requested by the user prompt. Keep every section, preserve exact file paths and identifiers when known, and prefer terse bullets over paragraphs.
 
@@ -145,6 +167,19 @@ export const Plugin = define({
               resource: path.relative(worktree, path.join(Global.Path.data, "plans", "*.md")),
               effect: "allow",
             },
+          ]),
+        )
+      })
+
+      draft.update(AgentV2.ID.make("research"), (item) => {
+        item.description =
+          "Research mode. Deeply gathers information from the web and the codebase without editing files."
+        item.system = PROMPT_RESEARCH
+        item.mode = "primary"
+        item.permissions.push(
+          ...PermissionV2.merge(defaults, [
+            { action: "question", resource: "*", effect: "allow" },
+            { action: "edit", resource: "*", effect: "deny" },
           ]),
         )
       })

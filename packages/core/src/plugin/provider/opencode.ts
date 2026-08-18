@@ -40,7 +40,7 @@ function oauth(http: HttpClient.HttpClient) {
     method: {
       id: methodID,
       type: "oauth",
-      label: "OpenCode Console account",
+      label: "Misci Console account",
     },
     authorize: () =>
       Effect.gen(function* () {
@@ -92,7 +92,7 @@ export const OpencodePlugin = define<HttpClient.HttpClient | EventV2.Service | S
       providers = credential
         ? yield* fetchProviders(http, credential).pipe(
             Effect.catch((cause) =>
-              Effect.logWarning("failed to load OpenCode provider config", { cause }).pipe(Effect.as(undefined)),
+              Effect.logWarning("failed to load Misci provider config", { cause }).pipe(Effect.as(undefined)),
             ),
           )
         : undefined
@@ -100,7 +100,7 @@ export const OpencodePlugin = define<HttpClient.HttpClient | EventV2.Service | S
 
     yield* ctx.integration.transform((draft) => {
       draft.update("opencode", (integration) => {
-        integration.name = "OpenCode"
+        integration.name = "Misci"
       })
       draft.method.update(oauth(http))
       draft.method.update({ integrationID: "opencode", method: { type: "key", label: "API key (service account)" } })
@@ -108,6 +108,12 @@ export const OpencodePlugin = define<HttpClient.HttpClient | EventV2.Service | S
 
     connected = (yield* ctx.integration.connection.active("opencode")) !== undefined
     yield* ctx.catalog.transform((catalog) => {
+      catalog.provider.update("opencode", (provider) => {
+        provider.name = "Misci"
+      })
+      catalog.provider.update("opencode-go", (provider) => {
+        provider.name = "Misci Go"
+      })
       for (const [providerID, item] of Object.entries(providers ?? {})) {
         catalog.provider.update(providerID, (provider) => {
           provider.integrationID = Integration.ID.make("opencode")

@@ -28,6 +28,11 @@ export const Style = {
   TEXT_INFO_BOLD: "\x1b[94m\x1b[1m",
 }
 
+export function setTerminalTitle(title: string) {
+  if (!process.stdout.isTTY) return
+  process.stdout.write(`\x1b]0;${title}\x07`)
+}
+
 export function println(...message: string[]) {
   print(...message)
   process.stderr.write(EOL)

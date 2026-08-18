@@ -1282,7 +1282,12 @@ export function fromModelsDevProvider(provider: ModelsDev.Provider): Info {
   return {
     id: ProviderV2.ID.make(provider.id),
     source: "custom",
-    name: provider.name,
+    name:
+      provider.id === "opencode"
+        ? "Misci"
+        : provider.id === "opencode-go"
+          ? "Misci Go"
+          : provider.name,
     env: [...(provider.env ?? [])],
     options: {},
     models,
@@ -1983,7 +1988,7 @@ const layer = Layer.effect(
   }),
 )
 
-const priority = ["gpt-5", "claude-sonnet-4", "big-pickle", "gemini-3-pro"]
+const priority = ["big-pickle"]
 const smallModelFamilyPriority = ["gemini-flash", "gpt-nano", "claude-haiku"]
 export function sort<T extends { id: string }>(models: T[]) {
   return sortBy(

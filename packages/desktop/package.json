@@ -6,7 +6,7 @@
   "license": "MIT",
   "homepage": "https://opencode.ai",
   "author": {
-    "name": "OpenCode",
+    "name": "Misci",
     "email": "hello@opencode.ai"
   },
   "scripts": {
@@ -24,6 +24,7 @@
   },
   "main": "./out/main/index.js",
   "dependencies": {
+    "@lydell/node-pty": "catalog:",
     "@zip.js/zip.js": "2.7.62",
     "effect": "catalog:",
     "electron-context-menu": "4.1.2",
@@ -35,7 +36,6 @@
   },
   "devDependencies": {
     "@actions/artifact": "4.0.0",
-    "@lydell/node-pty": "catalog:",
     "@opencode-ai/app": "workspace:*",
     "@opencode-ai/ui": "workspace:*",
     "@sentry/solid": "catalog:",
