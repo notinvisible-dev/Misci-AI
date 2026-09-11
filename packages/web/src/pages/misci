@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misci — Your AI Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#ffffff;--bg-card:#f9f9fb;--bg-elevated:#f4f4f5;--border:#e4e4e7;
+    --text:#18181b;--text-dim:#52525b;--text-dimmer:#a1a1aa;
+    --accent:#5b4ccc;--accent-light:#4a3db8;--accent-glow:rgba(91,76,204,.08);
+    --nav-bg:rgba(255,255,255,.82);
+    --terminal-bg:#1e1e22;--terminal-text:#d4d4d8;--terminal-dim:#71717a;--terminal-border:#2e2e33;
+    --radius:12px;
+    color-scheme:light dark;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#09090b;--bg-card:#111113;--bg-elevated:#18181b;--border:#1e1e22;
+    --text:#e4e4e7;--text-dim:#a1a1aa;--text-dimmer:#3f3f46;
+    --accent:#8b7dff;--accent-light:#a99dff;--accent-glow:rgba(139,125,255,.12);
+    --nav-bg:rgba(9,9,11,.82);
+    --terminal-bg:#111113;--terminal-text:#d4d4d8;--terminal-dim:#71717a;--terminal-border:#1e1e22;
+  }}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 clamp(1rem,5vw,4rem);height:64px;display:flex;align-items:center;justify-content:space-between;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:background .3s,border-color .3s}
+  .logo{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:700;font-size:1.25rem;color:var(--text);text-decoration:none;letter-spacing:-.02em}
+  .logo span{color:var(--accent)}
+  nav a{color:var(--text-dim);text-decoration:none;font-size:.875rem;transition:color .2s}
+  nav a:hover{color:var(--text)}
+  .nav-links{display:flex;gap:2rem;align-items:center}
+
+  /* HERO */
+  .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 1.5rem 6rem;overflow:hidden}
+  .hero::before{content:'';position:absolute;width:700px;height:700px;top:50%;left:50%;transform:translate(-50%,-55%);background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);pointer-events:none}
+  .hero-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .875rem;border-radius:100px;border:1px solid var(--border);font-size:.8rem;color:var(--text-dim);margin-bottom:2rem;background:var(--bg-card);backdrop-filter:blur(8px)}
+  .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(2.75rem,7vw,4.75rem);font-weight:700;line-height:1.05;letter-spacing:-.04em;color:var(--text);max-width:800px}
+  h1 em{font-style:normal;color:var(--accent)}
+  .hero-sub{font-size:1.125rem;color:var(--text-dim);max-width:540px;margin:1.5rem auto 2.5rem;line-height:1.7}
+  .hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+  .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:var(--radius);font-size:.9rem;font-weight:500;text-decoration:none;transition:all .2s;cursor:pointer;border:none;font-family:inherit}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-light);transform:translateY(-1px)}
+  .btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border)}
+  .btn-ghost:hover{color:var(--text);border-color:var(--text-dimmer)}
+  .btn svg{width:18px;height:18px}
+
+  /* TERMINAL PREVIEW */
+  .preview{margin-top:4rem;width:100%;max-width:900px;position:relative}
+  .terminal{background:var(--terminal-bg);border:1px solid var(--terminal-border);border-radius:var(--radius);overflow:hidden;text-align:left}
+  .terminal-bar{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-bottom:1px solid var(--terminal-border)}
+  .terminal-dot{width:10px;height:10px;border-radius:50%}
+  .terminal-dot:first-child{background:#ef4444}
+  .terminal-dot:nth-child(2){background:#eab308}
+  .terminal-dot:nth-child(3){background:#22c55e}
+  .terminal-body{padding:1.25rem 1.5rem;font-family:'SF Mono','Fira Code',monospace;font-size:.825rem;line-height:1.8;color:var(--terminal-dim)}
+  .terminal-body .prompt{color:#a99dff}
+  .terminal-body .cmd{color:var(--terminal-text)}
+  .terminal-body .output{color:var(--terminal-dim)}
+  .terminal-body .highlight{color:#22c55e}
+  .terminal-body .dim{color:#52525b}
+
+  /* FEATURES */
+  .features{padding:6rem clamp(1rem,5vw,4rem);max-width:1100px;margin:0 auto}
+  .section-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:600;margin-bottom:.75rem}
+  .section-title{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(1.75rem,4vw,2.5rem);font-weight:700;letter-spacing:-.03em;color:var(--text);margin-bottom:1rem}
+  .section-desc{color:var(--text-dim);max-width:500px;margin-bottom:3rem;font-size:1rem;line-height:1.7}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+  .grid-item{background:var(--bg-card);padding:2rem;transition:background .3s}
+  .grid-item h3{font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+  .grid-item p{color:var(--text-dim);font-size:.9rem;line-height:1.6}
+  .grid-icon{width:28px;height:28px;border-radius:8px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+
+  /* SKILLS */
+  .skills{padding:6rem clamp(1rem,5vw,4rem);max-width:1100px;margin:0 auto}
+  .skill-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:2rem}
+  .skill-tag{padding:.4rem .875rem;border-radius:100px;border:1px solid var(--border);font-size:.8rem;color:var(--text-dim);background:var(--bg-card);transition:all .2s}
+  .skill-tag:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* CTA */
+  .cta{padding:6rem 1.5rem;text-align:center;border-top:1px solid var(--border)}
+  .cta h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(2rem,5vw,3rem);font-weight:700;letter-spacing:-.03em;color:var(--text);margin-bottom:1rem}
+  .cta p{color:var(--text-dim);margin-bottom:2rem;font-size:1rem}
+
+  /* FOOTER */
+  footer{padding:3rem clamp(1rem,5vw,4rem);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+  footer span{color:var(--text-dimmer);font-size:.8rem}
+  footer a{color:var(--text-dim);text-decoration:none;font-size:.8rem;transition:color .2s}
+  footer a:hover{color:var(--text)}
+  .footer-links{display:flex;gap:1.5rem}
+
+  @media(max-width:640px){
+    .nav-links{gap:1rem}
+    .grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://mielwolters.nl/misci" class="logo">misci<span>.</span></a>
+  <div class="nav-links">
+    <a href="https://mielwolters.nl/miscidocs">Docs</a>
+    <a href="https://github.com/notinvisible-dev/Misci-AI">GitHub</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> v1.18</div>
+  <h1>The AI that <em>gets things done</em></h1>
+  <p class="hero-sub">A general-purpose AI assistant with 25 built-in skills. Writes documents, generates art, crunches numbers, and automates your workflow — all from a single desktop app.</p>
+  <div class="hero-actions">
+    <a href="https://github.com/notinvisible-dev/Misci-AI/releases" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download
+    </a>
+    <a href="https://mielwolters.nl/miscidocs" class="btn btn-ghost">Read the docs</a>
+  </div>
+
+  <div class="preview">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+      </div>
+      <div class="terminal-body">
+        <span class="prompt">$</span> <span class="cmd">misci</span><br>
+        <span class="dim">Connecting to session...</span><br>
+        <span class="highlight">✔</span> <span class="output">Ready. What can I help with?</span><br>
+        <br>
+        <span class="prompt">$</span> <span class="cmd">Draft a project proposal for a mobile app launch</span><br>
+        <span class="dim">Thinking...</span><br>
+        <span class="highlight">✔</span> <span class="output">Created proposal.docx with executive summary, timeline, and budget</span><br>
+        <span class="highlight">✔</span> <span class="output">Generated financial projections spreadsheet</span><br>
+        <span class="highlight">✔</span> <span class="output">Built presentation deck with 12 slides</span><br>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="section-label">Capabilities</div>
+  <div class="section-title">One assistant, every task</div>
+  <div class="section-desc">Misci handles documents, code, data, design, and everything in between.</div>
+  <div class="grid">
+    <div class="grid-item">
+      <h3><span class="grid-icon">📄</span> Documents & spreadsheets</h3>
+      <p>Create and edit Word docs, PDFs, Excel spreadsheets, and PowerPoint presentations with full formatting.</p>
+    </div>
+    <div class="grid-item">
+      <h3><span class="grid-icon">🎨</span> Creative work</h3>
+      <p>Generate algorithmic art, build web pages, design presentations, and create visual content.</p>
+    </div>
+    <div class="grid-item">
+      <h3><span class="grid-icon">🧠</span> Multi-model</h3>
+      <p>Works with GPT-5, Claude, Gemini, Grok, and any OpenAI-compatible provider. Pick the best model for each task.</p>
+    </div>
+    <div class="grid-item">
+      <h3><span class="grid-icon">📦</span> 25 built-in skills</h3>
+      <p>Financial calculators, event planning, morning briefings, YouTube summaries, and more — out of the box.</p>
+    </div>
+    <div class="grid-item">
+      <h3><span class="grid-icon">💻</span> Code & automation</h3>
+      <p>Writes code, runs commands, searches files, and automates repetitive tasks across your projects.</p>
+    </div>
+    <div class="grid-item">
+      <h3><span class="grid-icon">💾</span> Persistent sessions</h3>
+      <p>Pick up exactly where you left off. Full conversation history, memory, and context continuity.</p>
+    </div>
+  </div>
+</section>
+
+<section class="skills">
+  <div class="section-label">Skills</div>
+  <div class="section-title">25 skills. Zero config.</div>
+  <div class="section-desc">Each skill activates automatically when relevant. Just ask and it happens.</div>
+  <div class="skill-tags">
+    <span class="skill-tag">PDF</span>
+    <span class="skill-tag">DOCX</span>
+    <span class="skill-tag">PowerPoint</span>
+    <span class="skill-tag">Excel</span>
+    <span class="skill-tag">Algorithmic Art</span>
+    <span class="skill-tag">Canvas Design</span>
+    <span class="skill-tag">Financial Calculator</span>
+    <span class="skill-tag">Event Planning</span>
+    <span class="skill-tag">Frontend Design</span>
+    <span class="skill-tag">Humanizer</span>
+    <span class="skill-tag">Internal Comms</span>
+    <span class="skill-tag">Learn</span>
+    <span class="skill-tag">MCP Builder</span>
+    <span class="skill-tag">Morning Briefing</span>
+    <span class="skill-tag">PDF Reading</span>
+    <span class="skill-tag">Setup Writing Style</span>
+    <span class="skill-tag">Skill Creator</span>
+    <span class="skill-tag">Slack GIF Creator</span>
+    <span class="skill-tag">Theme Factory</span>
+    <span class="skill-tag">Web Artifacts</span>
+    <span class="skill-tag">YouTube Subtitles</span>
+    <span class="skill-tag">Criticize</span>
+    <span class="skill-tag">Memory</span>
+    <span class="skill-tag">Doc Co-authoring</span>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Start using Misci</h2>
+  <p>Free and open source. Available on Linux, Windows, and macOS.</p>
+  <div class="hero-actions">
+    <a href="https://github.com/notinvisible-dev/Misci-AI/releases" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Misci
+    </a>
+    <a href="https://github.com/notinvisible-dev/Misci-AI" class="btn btn-ghost">View source</a>
+  </div>
+</section>
+
+<footer>
+  <span>Misci is open source under the MIT license.</span>
+  <div class="footer-links">
+    <a href="https://mielwolters.nl/miscidocs">Docs</a>
+    <a href="https://github.com/notinvisible-dev/Misci-AI">GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>

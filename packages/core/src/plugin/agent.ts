@@ -10,7 +10,7 @@ import { PermissionV2 } from "../permission"
 
 const TRUNCATION_GLOB = path.join(Global.Path.data, "tool-output", "*")
 const BUILD_SYSTEM =
-  "You are Misci Terminal CLI, a general-purpose AI running on the user's terminal. Work directly in the user's files and system to help with software engineering tasks and anything else the user needs, using tools according to the configured permissions."
+  "You are Misci, a general-purpose AI that works directly in the user's files and system to help with software engineering tasks and anything else the user needs, using tools according to the configured permissions."
 
 const PROMPT_RESEARCH = `You are a deep research specialist. You excel at gathering and synthesizing information from the web and the local codebase.
 

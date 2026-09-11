@@ -85,8 +85,8 @@ export const dict = {
 
   "home.title": "Misci | The open source AI coding agent",
 
-  "temp.title": "Misci | AI coding agent built for the terminal",
-  "temp.hero.title": "The AI coding agent built for the terminal",
+  "temp.title": "Misci | The AI that works directly in your files",
+  "temp.hero.title": "The AI agent that works directly in your files",
   "temp.zen": "Misci zen",
   "temp.getStarted": "Get Started",
   "temp.feature.native.title": "Native TUI",
@@ -119,7 +119,7 @@ export const dict = {
   "home.install.ariaLabel": "Install options",
 
   "home.what.title": "What is Misci?",
-  "home.what.body": "Misci is an open source agent that helps you write code in your terminal, IDE, or desktop.",
+  "home.what.body": "Misci is an open source agent that works directly in your files — and can control your terminal when you need it.",
   "home.what.lsp.title": "LSP enabled",
   "home.what.lsp.body": "Automatically loads the right LSPs for the LLM",
   "home.what.multiSession.title": "Multi-session",
@@ -133,7 +133,7 @@ export const dict = {
   "home.what.anyModel.title": "Any model",
   "home.what.anyModel.body": "75+ LLM providers through Models.dev, including local models",
   "home.what.anyEditor.title": "Any editor",
-  "home.what.anyEditor.body": "Available as a terminal interface, desktop app, and IDE extension",
+  "home.what.anyEditor.body": "Available as a desktop app, web interface, and terminal",
   "home.what.readDocs": "Read docs",
 
   "home.growth.title": "The open source AI coding agent",
@@ -151,7 +151,7 @@ export const dict = {
 
   "home.faq.q1": "What is Misci?",
   "home.faq.a1":
-    "Misci is an open source agent that helps you write and run code with any AI model. It's available as a terminal-based interface, desktop app, or IDE extension.",
+    "Misci is an open source agent that works directly in your files with any AI model, and can control your terminal whenever you need it. It's available as a desktop app, web interface, or terminal.",
   "home.faq.q2": "How do I use Misci?",
   "home.faq.a2.before": "The easiest way to get started is to read the",
   "home.faq.a2.link": "intro",
@@ -167,8 +167,8 @@ export const dict = {
   "home.faq.q4": "Can I use my existing AI subscriptions with Misci?",
   "home.faq.a4.p1":
     "Yes, Misci supports subscription plans from all major providers. You can use your Claude Pro/Max, ChatGPT Plus/Pro, or GitHub Copilot subscriptions.",
-  "home.faq.q5": "Can I only use Misci in the terminal?",
-  "home.faq.a5.beforeDesktop": "Not anymore! Misci is now available as an app for your",
+  "home.faq.q5": "Is Misci only a terminal tool?",
+  "home.faq.a5.beforeDesktop": "No! Misci's main job is working directly in your files. It's also available as an app for your",
   "home.faq.a5.desktop": "desktop",
   "home.faq.a5.and": "and",
   "home.faq.a5.web": "web",

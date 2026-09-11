@@ -1,6 +1,20 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "provider": {},
+  "provider": {
+    "ollama": {
+      "options": {
+        "baseURL": "http://127.0.0.1:11434/v1"
+      },
+      "models": {
+        "misci-qwen:latest": {
+          "limit": {
+            "context": 32768,
+            "output": 8192
+          }
+        }
+      }
+    }
+  },
   "permission": {},
   "references": {
     "effect": {

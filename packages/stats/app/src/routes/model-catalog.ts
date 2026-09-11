@@ -133,6 +133,7 @@ function buildModelCatalog(payload: unknown, pricingPayload?: unknown, labPayloa
         model.cost,
     }))
     .toSorted((a, b) => a.lab.localeCompare(b.lab) || displayDateTime(b.releaseDate) - displayDateTime(a.releaseDate))
+    .map(applyWeightsOverrides)
   return {
     models,
     labs: Object.values(
@@ -147,6 +148,21 @@ function buildModelCatalog(payload: unknown, pricingPayload?: unknown, labPayloa
       }, {}),
     ).toSorted((a, b) => a.name.localeCompare(b.name)),
   }
+}
+
+function applyWeightsOverrides(model: ModelCatalogEntry): ModelCatalogEntry {
+  const override = localWeightsOverrides[model.slug]
+  return override ? { ...model, weights: override } : model
+}
+
+const localWeightsOverrides: Record<string, { label: string; url: string }[]> = {
+  "nemotron-3-ultra-free": nemotronUltraFreeWeights(),
+}
+
+function nemotronUltraFreeWeights() {
+  const repo = "https://huggingface.co/nvidia/Nemotron-3-Ultra-550B-A55B"
+  const quants = ["Q2_K", "Q3_K_S", "Q3_K_M", "Q3_K_L", "Q4_0", "Q4_K_S", "Q4_K_M", "Q5_0", "Q5_K_S", "Q5_K_M", "Q6_K", "Q8_0", "FP8", "FP16", "BF16", "INT8", "INT4", "AWQ"]
+  return quants.map((label) => ({ label, url: repo }))
 }
 
 function readModelCatalogEntry(value: unknown): ModelCatalogEntry[] {

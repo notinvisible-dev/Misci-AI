@@ -1,0 +1,106 @@
+/* Misci — clean minimal overrides */
+
+/* Flat landing background; no radial gradient */
+.dialog-titlebar,
+dialog {
+  background: var(--v2-background-bg-base) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--v2-border-border-muted);
+}
+
+/* Ring on dialogs */
+dialog,
+.alert,
+.error-modal,
+.drop-down-menu,
+.ai-reply-menu {
+  border-radius: 12px !important;
+}
+
+/* Floating composer — tighten */
+.composer-floating {
+  border-radius: 12px !important;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.06),
+    0 0 0 1px var(--v2-border-border-muted) !important;
+}
+
+/* Session side panel — remove tint */
+[data-component="session-side-panel"] {
+  background: var(--v2-background-bg-base) !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-left: 1px solid var(--v2-border-border-muted) !important;
+}
+
+[data-component="session-side-panel"]:has(.is-open) {
+  box-shadow: -2px 0 8px rgba(0,0,0,0.04) !important;
+}
+
+/* Inset border around messages list */
+.messages-container {
+  border: 1px solid var(--v2-border-border-muted);
+  border-radius: 8px;
+  margin: 6px;
+}
+
+/* ── Assistant accent bar — 1px line to left of assistant messages */
+.chat-message-message-chat-assistant {
+  border-left: 2px solid var(--v2-text-text-accent);
+  padding-left: 10px;
+  border-radius: 0 6px 6px 0;
+  margin-left: 0;
+}
+
+/* ── Code blocks — minimal */
+code {
+  border: 1px solid var(--v2-border-border-muted);
+  background: var(--v2-background-bg-layer-02);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+pre {
+  border: 1px solid var(--v2-border-border-muted);
+  border-radius: 8px;
+  background: var(--v2-background-bg-layer-01);
+  padding: 12px 14px;
+  font-size: 0.82em;
+  line-height: 1.5;
+}
+
+pre code {
+  border: none;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 1em;
+}
+
+/* ── Tool usage — clean pill */
+.tool-usage {
+  border: 1px solid var(--v2-border-border-muted);
+  border-radius: 6px;
+  background: var(--v2-background-bg-layer-02);
+  padding: 2px 6px;
+}
+
+/* ── Toolbar — clean line */
+.toolbar {
+  border: none !important;
+  border-bottom: 1px solid var(--v2-border-border-muted) !important;
+}
+
+/* ── Status items — subtle */
+.status-view-content {
+  background: var(--v2-background-bg-layer-01);
+  border: 1px solid var(--v2-border-border-muted);
+  border-radius: 8px;
+}
+
+/* ── Subheadings — sans, weight 500 */
+h1, h2, h3, h4 {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}

@@ -1,6 +1,6 @@
 # Misci
 
-An open-source AI coding agent with a desktop app, terminal UI, and 25 built-in skills.
+An open-source AI agent that works directly in your files — with full control of your terminal when you need it. Available as a desktop app, web interface, and TUI, with 25 built-in skills.
 
 Misci is a fork of [OpenCode](https://github.com/anomalyco/opencode) with rebranding, custom skills, and desktop packaging.
 

@@ -32,6 +32,7 @@ import themeFactoryContent from "./skill/theme-factory/SKILL.md" with { type: "t
 import webArtifactsBuilderContent from "./skill/web-artifacts-builder/SKILL.md" with { type: "text" }
 import xlsxContent from "./skill/xlsx/SKILL.md" with { type: "text" }
 import youtubeSubtitlesContent from "./skill/youtube-subtitles/SKILL.md" with { type: "text" }
+import screenAutomationContent from "./skill/screen-automation/SKILL.md" with { type: "text" }
 
 export const CustomizeOpencodeContent = customizeOpencodeContent
 
@@ -86,6 +87,7 @@ const sources = [
   embedded("/builtin/web-artifacts-builder/SKILL.md", webArtifactsBuilderContent),
   embedded("/builtin/xlsx/SKILL.md", xlsxContent),
   embedded("/builtin/youtube-subtitles/SKILL.md", youtubeSubtitlesContent),
+  embedded("/builtin/screen-automation/SKILL.md", screenAutomationContent),
 ].filter((source): source is SkillV2.EmbeddedSource => source !== undefined)
 
 export const EmbeddedSources = sources

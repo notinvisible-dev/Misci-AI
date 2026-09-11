@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docs — Misci</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#ffffff;--bg-card:#f9f9fb;--bg-code:#f4f4f5;--border:#e4e4e7;
+    --text:#18181b;--text-dim:#3f3f46;--text-dimmer:#a1a1aa;
+    --accent:#5b4ccc;--accent-light:#4a3db8;--accent-glow:rgba(91,76,204,.07);
+    --nav-bg:rgba(255,255,255,.85);
+    --radius:10px;--sidebar-w:260px;
+    color-scheme:light dark;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#09090b;--bg-card:#111113;--bg-code:#161619;--border:#1e1e22;
+    --text:#e4e4e7;--text-dim:#a1a1aa;--text-dimmer:#71717a;
+    --accent:#8b7dff;--accent-light:#a99dff;--accent-glow:rgba(139,125,255,.12);
+    --nav-bg:rgba(9,9,11,.85);
+  }}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;padding:0 2rem;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:background .3s,border-color .3s}
+  .logo{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:700;font-size:1.15rem;color:var(--text);text-decoration:none;letter-spacing:-.02em}
+  .logo span{color:var(--accent)}
+  nav .nav-right{margin-left:auto;display:flex;gap:1.5rem;align-items:center}
+  nav a{color:var(--text-dimmer);text-decoration:none;font-size:.85rem;transition:color .2s}
+  nav a:hover{color:var(--text)}
+
+  .layout{display:flex;padding-top:56px;min-height:100vh}
+
+  .sidebar{position:fixed;top:56px;left:0;bottom:0;width:var(--sidebar-w);padding:1.5rem 1.5rem 2rem 2rem;overflow-y:auto;border-right:1px solid var(--border);background:var(--bg);transition:background .3s,border-color .3s}
+  .sidebar-group{margin-bottom:1.5rem}
+  .sidebar-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dimmer);font-weight:600;margin-bottom:.5rem;padding-left:.5rem}
+  .sidebar-link{display:block;padding:.35rem .5rem;border-radius:6px;font-size:.85rem;color:var(--text-dim);text-decoration:none;transition:all .15s;margin-bottom:1px}
+  .sidebar-link:hover{color:var(--text);background:var(--accent-glow)}
+  .sidebar-link.active{color:var(--accent);background:var(--accent-glow);font-weight:500}
+
+  .main{margin-left:var(--sidebar-w);flex:1;max-width:780px;padding:3rem 3.5rem 6rem}
+
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:2rem;font-weight:700;letter-spacing:-.03em;color:var(--text);margin-bottom:.5rem}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.4rem;font-weight:600;letter-spacing:-.02em;color:var(--text);margin:3rem 0 .75rem;padding-top:1rem;border-top:1px solid var(--border)}
+  h3{font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.1rem;font-weight:600;color:var(--text);margin:2rem 0 .5rem}
+  p{color:var(--text-dim);margin-bottom:1rem;font-size:.925rem}
+  .subtitle{color:var(--text-dimmer);font-size:1rem;margin-bottom:2.5rem}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  strong{color:var(--text);font-weight:500}
+
+  code{font-family:'JetBrains Mono',monospace;font-size:.825rem;background:var(--bg-code);padding:.15rem .4rem;border-radius:4px;color:var(--text);border:1px solid var(--border);transition:background .3s,border-color .3s}
+  pre{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;overflow-x:auto;margin:1rem 0 1.5rem;font-size:.825rem;line-height:1.7;transition:background .3s,border-color .3s}
+  pre code{background:none;padding:0;border:none;font-size:inherit}
+  .prompt-char{color:var(--accent);user-select:none}
+
+  ul,ol{color:var(--text-dim);margin:0 0 1.25rem 1.25rem;font-size:.925rem}
+  li{margin-bottom:.35rem}
+  li::marker{color:var(--text-dimmer)}
+
+  .callout{padding:1rem 1.25rem;border-radius:var(--radius);margin:1.25rem 0;font-size:.875rem;border:1px solid}
+  .callout-info{background:var(--accent-glow);border-color:rgba(91,76,204,.15);color:var(--text-dim)}
+  .callout-info strong{color:var(--accent)}
+  .callout-warn{background:rgba(234,179,8,.06);border-color:rgba(234,179,8,.2);color:var(--text-dim)}
+  .callout-warn strong{color:#a16207}
+  @media(prefers-color-scheme:dark){.callout-warn strong{color:#eab308}}
+
+  table{width:100%;border-collapse:collapse;margin:1rem 0 1.5rem;font-size:.875rem}
+  th{text-align:left;color:var(--text-dimmer);font-weight:500;padding:.5rem .75rem;border-bottom:1px solid var(--border)}
+  td{padding:.5rem .75rem;border-bottom:1px solid var(--border);color:var(--text-dim)}
+
+  .sidebar-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.25rem;cursor:pointer;padding:.25rem}
+  @media(max-width:900px){
+    .sidebar{transform:translateX(-100%);transition:transform .25s}
+    .sidebar.open{transform:translateX(0);z-index:99}
+    .sidebar-toggle{display:block}
+    .main{margin-left:0;padding:2rem 1.5rem 4rem}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://mielwolters.nl/misci" class="logo">misci<span>.</span></a>
+  <div class="nav-right">
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+    <a href="https://mielwolters.nl/misci">Home</a>
+    <a href="https://github.com/notinvisible-dev/Misci-AI">GitHub</a>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-label">Getting Started</div>
+      <a href="https://mielwolters.nl/miscidocs#installation" class="sidebar-link active">Installation</a>
+      <a href="https://mielwolters.nl/miscidocs#configuration" class="sidebar-link">Configuration</a>
+      <a href="https://mielwolters.nl/miscidocs#providers" class="sidebar-link">Providers</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-label">Desktop App</div>
+      <a href="https://mielwolters.nl/miscidocs#desktop" class="sidebar-link">Overview</a>
+      <a href="https://mielwolters.nl/miscidocs#keyboard" class="sidebar-link">Keyboard shortcuts</a>
+      <a href="https://mielwolters.nl/miscidocs#themes" class="sidebar-link">Themes</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-label">Skills</div>
+      <a href="https://mielwolters.nl/miscidocs#skills" class="sidebar-link">Built-in skills</a>
+      <a href="https://mielwolters.nl/miscidocs#custom-skills" class="sidebar-link">Custom skills</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-label">Reference</div>
+      <a href="https://mielwolters.nl/miscidocs#mcp" class="sidebar-link">MCP servers</a>
+      <a href="https://mielwolters.nl/miscidocs#agents" class="sidebar-link">Custom agents</a>
+      <a href="https://mielwolters.nl/miscidocs#commands" class="sidebar-link">Commands</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <p class="subtitle">Everything you need to set up and use Misci.</p>
+
+    <h2 id="installation">Installation</h2>
+    <p>Download the latest release for your platform from <a href="https://github.com/notinvisible-dev/Misci-AI/releases">GitHub Releases</a>.</p>
+    <p>Available for Linux (AppImage), Windows (portable .exe), and macOS.</p>
+    <h3>Linux</h3>
+    <pre><code><span class="prompt-char">$</span> chmod +x misci-desktop-*.AppImage
+<span class="prompt-char">$</span> ./misci-desktop-*.AppImage --no-sandbox</code></pre>
+    <h3>Windows</h3>
+    <p>Run the portable <code>.exe</code> directly. No installation required.</p>
+    <h3>macOS</h3>
+    <p>Open the <code>.dmg</code> and drag Misci to your Applications folder.</p>
+
+    <h2 id="configuration">Configuration</h2>
+    <p>Misci reads from <code>opencode.json</code> or <code>opencode.jsonc</code> in your project root. The config file sets your providers, models, agents, and permissions.</p>
+    <h3>Minimal config</h3>
+    <pre><code>{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openai": {
+      "api-key": "env:OPENAI_API_KEY"
+    }
+  }
+}</code></pre>
+    <div class="callout callout-info">
+      <strong>Tip:</strong> Use <code>env:VARIABLE_NAME</code> to reference environment variables. Never hardcode API keys in your config file.
+    </div>
+    <h3>Config options</h3>
+    <table>
+      <thead><tr><th>Key</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>provider</code></td><td>LLM provider configuration and API keys</td></tr>
+        <tr><td><code>model</code></td><td>Default model for each provider</td></tr>
+        <tr><td><code>agent</code></td><td>Custom agent definitions</td></tr>
+        <tr><td><code>command</code></td><td>Custom slash commands</td></tr>
+        <tr><td><code>mcp</code></td><td>MCP server connections</td></tr>
+        <tr><td><code>permission</code></td><td>Tool permission rules</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="providers">Providers</h2>
+    <p>Misci supports all major LLM providers out of the box.</p>
+    <table>
+      <thead><tr><th>Provider</th><th>Key</th><th>Env variable</th></tr></thead>
+      <tbody>
+        <tr><td>OpenAI</td><td><code>openai</code></td><td><code>OPENAI_API_KEY</code></td></tr>
+        <tr><td>Anthropic</td><td><code>anthropic</code></td><td><code>ANTHROPIC_API_KEY</code></td></tr>
+        <tr><td>Google</td><td><code>google</code></td><td><code>GOOGLE_API_KEY</code></td></tr>
+        <tr><td>xAI</td><td><code>xai</code></td><td><code>XAI_API_KEY</code></td></tr>
+        <tr><td>Mistral</td><td><code>mistral</code></td><td><code>MISTRAL_API_KEY</code></td></tr>
+        <tr><td>OpenAI-compatible</td><td><code>openai-compatible</code></td><td>Custom URL + key</td></tr>
+      </tbody>
+    </table>
+    <h3>Using multiple providers</h3>
+    <pre><code>{
+  "provider": {
+    "openai": { "api-key": "env:OPENAI_API_KEY" },
+    "anthropic": { "api-key": "env:ANTHROPIC_API_KEY" }
+  },
+  "model": {
+    "default": "gpt-5",
+    "big": "claude-opus-4-5"
+  }
+}</code></pre>
+
+    <h2 id="desktop">Desktop App</h2>
+    <p>The Misci desktop app bundles the full agent with a graphical interface, session management, and file tree navigation.</p>
+    <ul>
+      <li><strong>Session management</strong> — Create, switch, and search sessions from the sidebar.</li>
+      <li><strong>File tree</strong> — Browse your project files directly in the app.</li>
+      <li><strong>Settings</strong> — Configure providers, models, and themes from the UI.</li>
+      <li><strong>Permissions</strong> — Review and approve tool actions before they execute.</li>
+    </ul>
+
+    <h2 id="keyboard">Keyboard shortcuts</h2>
+    <table>
+      <thead><tr><th>Shortcut</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><code>Ctrl+Enter</code></td><td>Send message</td></tr>
+        <tr><td><code>Ctrl+N</code></td><td>New session</td></tr>
+        <tr><td><code>Ctrl+K</code></td><td>Quick search</td></tr>
+        <tr><td><code>Ctrl+,</code></td><td>Open settings</td></tr>
+        <tr><td><code>Esc</code></td><td>Cancel / close</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="themes">Themes</h2>
+    <p>Misci ships with 40+ built-in themes and adapts to your system's light or dark mode preference automatically.</p>
+    <p>Apply themes from Settings, or create your own:</p>
+    <pre><code>{
+  "$schema": "https://opencode.ai/desktop-theme.json",
+  "name": "My Theme",
+  "colors": {
+    "background": "#ffffff",
+    "foreground": "#18181b",
+    "accent": "#5b4ccc"
+  }
+}</code></pre>
+    <p>Save your theme as a <code>.json</code> file and load it from the Settings panel.</p>
+
+    <h2 id="skills">Built-in skills</h2>
+    <p>Skills are specialized capabilities that Misci can use when relevant. They activate automatically based on your request.</p>
+    <div class="callout callout-info">
+      <strong>How it works:</strong> Misci reads your message, determines which skills are relevant, and activates them. You don't need to invoke skills manually.
+    </div>
+
+    <h3>Document skills</h3>
+    <ul>
+      <li><strong>PDF</strong> — Create, edit, merge, split, fill forms, encrypt/decrypt PDFs</li>
+      <li><strong>PDF Reading</strong> — Read, extract text, tables, images, and perform OCR</li>
+      <li><strong>DOCX</strong> — Create and edit Word documents with formatting</li>
+      <li><strong>PowerPoint</strong> — Build and edit slide decks</li>
+      <li><strong>Excel</strong> — Create, edit, format, and chart spreadsheets</li>
+    </ul>
+
+    <h3>Creative skills</h3>
+    <ul>
+      <li><strong>Algorithmic Art</strong> — Generate art with p5.js and seeded randomness</li>
+      <li><strong>Canvas Design</strong> — Create visual art for PNG and PDF output</li>
+      <li><strong>Frontend Design</strong> — Guidance for distinctive UI design</li>
+      <li><strong>Theme Factory</strong> — Apply and generate themes for artifacts</li>
+      <li><strong>Web Artifacts</strong> — Build React/HTML components with Tailwind</li>
+      <li><strong>Slack GIF Creator</strong> — Create animated GIFs optimized for Slack</li>
+    </ul>
+
+    <h3>Writing skills</h3>
+    <ul>
+      <li><strong>Humanizer</strong> — Rewrite text to sound natural and non-AI</li>
+      <li><strong>Setup Writing Style</strong> — Learn the user's voice and match it</li>
+      <li><strong>Doc Co-authoring</strong> — Structured workflow for co-writing documentation</li>
+      <li><strong>Internal Comms</strong> — Write status reports, updates, and newsletters</li>
+    </ul>
+
+    <h3>Productivity skills</h3>
+    <ul>
+      <li><strong>Financial Calculator</strong> — Tax estimates, loan comparisons, retirement projections</li>
+      <li><strong>Event Planning</strong> — Venue research, guest lists, timelines, budgets</li>
+      <li><strong>Morning Briefing</strong> — Daily news and weather briefing</li>
+      <li><strong>YouTube Subtitles</strong> — Summarize YouTube videos via subtitles</li>
+      <li><strong>Memory</strong> — Persist preferences and context across sessions</li>
+    </ul>
+
+    <h3>Developer skills</h3>
+    <ul>
+      <li><strong>MCP Builder</strong> — Guide for building MCP servers</li>
+      <li><strong>Skill Creator</strong> — Create, edit, and test custom skills</li>
+      <li><strong>Criticize</strong> — Analyze weaknesses and provide concrete feedback</li>
+      <li><strong>Learn</strong> — Structured teaching and concept explanation</li>
+    </ul>
+
+    <h2 id="custom-skills">Custom skills</h2>
+    <p>Create your own skills by adding a Markdown file to your project's <code>.opencode/skills/</code> directory.</p>
+    <pre><code>.opencode/
+  skills/
+    my-skill/
+      SKILL.md</code></pre>
+    <p>The <code>SKILL.md</code> file contains the skill's instructions. Misci loads it automatically when relevant.</p>
+    <h3>Skill file format</h3>
+    <pre><code># My Skill
+
+Description of what this skill does and when to activate it.
+
+## Instructions
+
+Step-by-step guidance for the AI to follow.
+
+## Examples
+
+Example inputs and expected outputs.</code></pre>
+    <div class="callout callout-warn">
+      <strong>Note:</strong> Skill names are derived from the folder name. Use lowercase with hyphens (e.g., <code>my-cool-skill</code>).
+    </div>
+
+    <h2 id="mcp">MCP servers</h2>
+    <p>Connect to Model Context Protocol servers to extend Misci with external tools and data sources.</p>
+    <pre><code>{
+  "mcp": {
+    "my-server": {
+      "command": "npx",
+      "args": ["-y", "my-mcp-server"],
+      "env": {
+        "API_KEY": "env:MY_API_KEY"
+      }
+    }
+  }
+}</code></pre>
+    <p>Misci will discover the tools exposed by each MCP server and make them available to the agent automatically.</p>
+
+    <h2 id="agents">Custom agents</h2>
+    <p>Define specialized agents for different workflows. Each agent has its own system prompt and model selection.</p>
+    <pre><code>{
+  "agent": {
+    "reviewer": {
+      "name": "Code Reviewer",
+      "description": "Reviews code for bugs and style issues",
+      "system": "You are a senior code reviewer. Focus on correctness, security, and maintainability.",
+      "model": "claude-opus-4-5"
+    }
+  }
+}</code></pre>
+
+    <h2 id="commands">Commands</h2>
+    <p>Custom slash commands give you quick access to repeated workflows.</p>
+    <pre><code>{
+  "command": {
+    "test": {
+      "description": "Run tests and fix failures",
+      "system": "Run the test suite. If any tests fail, analyze the failure and fix the code. Run tests again to confirm."
+    }
+  }
+}</code></pre>
+    <p>Use it by typing <code>/test</code> in any session.</p>
+
+  </main>
+</div>
+
+<script>
+document.querySelectorAll('.sidebar-link').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelector('.sidebar').classList.remove('open');
+  });
+});
+</script>
+
+</body>
+</html>
