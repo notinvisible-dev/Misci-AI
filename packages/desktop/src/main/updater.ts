@@ -30,7 +30,19 @@ export function setupAutoUpdater(stop: () => Promise<void>) {
     enabled: UPDATER_ENABLED,
     currentVersion: app.getVersion(),
     backend: {
-      checkForUpdates: () => autoUpdater.checkForUpdates(),
+      checkForUpdates: async () => {
+        try {
+          return await autoUpdater.checkForUpdates()
+        } catch (error) {
+          // No release feed exists yet (e.g. no published release); treat as
+          // up-to-date instead of surfacing a feed-parse error.
+          if (error instanceof Error && /release feed/i.test(error.message)) {
+            logger.log("updater: no update feed available", error.message)
+            return { isUpdateAvailable: false }
+          }
+          throw error
+        }
+      },
       downloadUpdate: () => autoUpdater.downloadUpdate(),
       quitAndInstall: () => {
         // quitAndInstall closes all windows before emitting before-quit, so

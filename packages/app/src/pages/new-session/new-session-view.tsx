@@ -3,7 +3,7 @@ import { Tooltip } from "@opencode-ai/ui/tooltip"
 import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { TooltipV2 } from "@opencode-ai/ui/v2/tooltip-v2"
 import { Show, createMemo, createSignal, type Accessor } from "solid-js"
-import misciLogo from "@/assets/misci_logo.png"
+import misciLogo from "@/assets/misci_logo_new.png"
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
 import createPresence from "solid-presence"
@@ -39,7 +39,7 @@ export function NewSessionView(props: {
       >
         <div class="absolute inset-x-0 top-[25.375%] flex justify-center px-6">
           <div class={NEW_SESSION_CONTENT_WIDTH}>
-            <img src={misciLogo} alt="" class="h-auto w-full" />
+            <img src={misciLogo} alt="" class="h-auto w-full max-w-[420px] mx-auto" />
             <div class="mt-8 flex flex-col gap-8">
               <PromptInputV2Composer controller={props.input} />
               <Show when={props.project.empty()}>

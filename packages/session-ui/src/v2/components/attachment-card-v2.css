@@ -33,7 +33,7 @@
   [data-slot="attachment-card-v2-title"],
   [data-slot="attachment-card-v2-subtitle"] {
     max-width: 100%;
-    font-family: var(--v2-font-family-sans, "Inter", sans-serif);
+    font-family: var(--v2-font-family-sans, "Poppins", sans-serif);
     font-style: normal;
     font-size: 11px;
     line-height: 12px;

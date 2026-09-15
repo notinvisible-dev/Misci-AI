@@ -1359,7 +1359,7 @@ body[data-new-layout] [data-component="user-message"] {
     }
 
     [data-component="button-v2"] {
-      font-family: var(--v2-font-family-sans, "Inter", sans-serif);
+      font-family: var(--v2-font-family-sans, "Poppins", sans-serif);
       font-weight: 530;
       font-variation-settings:
         "wght" 530,

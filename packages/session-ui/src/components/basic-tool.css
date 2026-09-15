@@ -286,7 +286,7 @@ body[data-new-layout] {
 
     [data-component="task-tool-title"] {
       height: 20px;
-      font-family: var(--v2-font-family-sans, "Inter", sans-serif);
+      font-family: var(--v2-font-family-sans, "Poppins", sans-serif);
       font-style: normal;
       font-weight: 530;
       font-size: 13px;
@@ -298,7 +298,7 @@ body[data-new-layout] {
     }
 
     [data-slot="basic-tool-tool-subtitle"] {
-      font-family: var(--v2-font-family-sans, "Inter", sans-serif);
+      font-family: var(--v2-font-family-sans, "Poppins", sans-serif);
       font-style: normal;
       font-weight: 440;
       font-size: 13px;
