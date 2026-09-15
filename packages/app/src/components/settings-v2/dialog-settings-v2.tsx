@@ -36,6 +36,12 @@ export const DialogSettings: Component<{
     if (route.type === "session") return serverSync().session.get(route.sessionId)?.directory
     return undefined
   })
+  const sessionID = createMemo(() => {
+    if (props.sessionID) return props.sessionID
+    const route = layout.route()
+    if (route.type === "session") return route.sessionId
+    return undefined
+  })
 
   const showProviders = () => {
     void dialog.show(() => <DialogSettings sessionID={props.sessionID} defaultValue="providers" />)
@@ -94,7 +100,7 @@ export const DialogSettings: Component<{
           </div>
         </TabsV2.List>
         <TabsV2.Content value="general" class="settings-v2-panel">
-          <SettingsGeneralV2 sessionID={props.sessionID} />
+          <SettingsGeneralV2 sessionID={sessionID()} directory={directory()} />
         </TabsV2.Content>
         <TabsV2.Content value="shortcuts" class="settings-v2-panel">
           <SettingsKeybinds v2 />
