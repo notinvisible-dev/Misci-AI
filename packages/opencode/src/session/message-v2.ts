@@ -35,6 +35,10 @@ import { isMedia } from "@/util/media"
 import type { SystemError } from "bun"
 import type { Provider } from "@/provider/provider"
 import { Effect, Schema } from "effect"
+import { Global } from "@opencode-ai/core/global"
+import path from "path"
+import { createHash } from "node:crypto"
+import fs from "node:fs/promises"
 
 /** Error shape thrown by Bun's fetch() when gzip/br decompression fails mid-stream */
 interface FetchDecompressionError extends Error {
@@ -45,6 +49,29 @@ interface FetchDecompressionError extends Error {
 
 export const SYNTHETIC_ATTACHMENT_PROMPT = "Attached media from tool result:"
 export { isMedia }
+
+function visionDelegationText(filepath: string, filename?: string) {
+  return (
+    `[Image attached: ${filename ?? "image"}]\n` +
+    `Your model cannot view images directly. Spawn the "vision" subagent via the Task tool ` +
+    `(subagent_type: "vision") with a prompt asking it to read and describe the image at: ${filepath}. ` +
+    `Wait for the subagent's description, then continue the task using it.`
+  )
+}
+
+const persistVisionImage = Effect.fnUntraced(function* (url: string) {
+  const match = url.match(/^data:([^;]+);base64,(.+)$/)
+  if (!match) return undefined
+  const ext = match[1]!.split("/")[1]?.split(";")[0] ?? "img"
+  const hash = createHash("sha256").update(match[2]!).digest("hex").slice(0, 24)
+  const dir = path.join(Global.Path.tmp, "vision")
+  const filepath = path.join(dir, `${hash}.${ext}`)
+  const written = yield* Effect.tryPromise(async () => {
+    await fs.mkdir(dir, { recursive: true })
+    await fs.access(filepath).catch(() => fs.writeFile(filepath, Buffer.from(match[2]!, "base64")))
+  }).pipe(Effect.option)
+  return written._tag === "Some" ? filepath : undefined
+})
 
 function truncateToolOutput(text: string, maxChars?: number) {
   if (!maxChars || text.length <= maxChars) return text
@@ -131,7 +158,7 @@ function providerMeta(metadata: Record<string, any> | undefined) {
 export const toModelMessagesEffect = Effect.fnUntraced(function* (
   input: WithParts[],
   model: Provider.Model,
-  options?: { stripMedia?: boolean; toolOutputMaxChars?: number },
+  options?: { stripMedia?: boolean; toolOutputMaxChars?: number; visionDelegation?: boolean },
 ) {
   const result: UIMessage[] = []
   const toolNames = new Set<string>()
@@ -214,6 +241,12 @@ export const toModelMessagesEffect = Effect.fnUntraced(function* (
             userMessage.parts.push({
               type: "text",
               text: `[Attached ${part.mime}: ${part.filename ?? "file"}]`,
+            })
+          } else if (options?.visionDelegation && !model.capabilities.input.image && part.mime.startsWith("image/")) {
+            const filepath = yield* persistVisionImage(part.url)
+            userMessage.parts.push({
+              type: "text",
+              text: filepath ? visionDelegationText(filepath, part.filename) : `[Attached ${part.mime}: ${part.filename ?? "file"}]`,
             })
           } else {
             userMessage.parts.push({
@@ -298,11 +331,14 @@ export const toModelMessagesEffect = Effect.fnUntraced(function* (
             // For providers that don't support media in tool results, extract media files
             // (images, PDFs) to be sent as a separate user message
             const mediaAttachments = attachments.filter((a) => isMedia(a.mime))
-            const extractedMedia = mediaAttachments.filter((a) => !supportsMediaInToolResult(a))
+            const delegateAllMedia = options?.visionDelegation && !model.capabilities.input.image
+            const extractedMedia = mediaAttachments.filter((a) => !supportsMediaInToolResult(a) || delegateAllMedia)
             if (extractedMedia.length > 0) {
               media.push(...extractedMedia)
             }
-            const finalAttachments = attachments.filter((a) => !isMedia(a.mime) || supportsMediaInToolResult(a))
+            const finalAttachments = attachments.filter(
+              (a) => !isMedia(a.mime) || (supportsMediaInToolResult(a) && !delegateAllMedia),
+            )
 
             const output =
               finalAttachments.length > 0
@@ -380,22 +416,52 @@ export const toModelMessagesEffect = Effect.fnUntraced(function* (
         // Inject pending media as a user message for providers that don't support
         // media (images, PDFs) in tool results
         if (media.length > 0) {
-          result.push({
-            id: MessageID.ascending(),
-            role: "user",
-            parts: [
-              {
-                type: "text" as const,
-                text: SYNTHETIC_ATTACHMENT_PROMPT,
-              },
-              ...media.map((attachment) => ({
-                type: "file" as const,
-                url: attachment.url,
-                mediaType: attachment.mime,
-                filename: attachment.filename,
-              })),
-            ],
-          })
+          if (options?.visionDelegation && !model.capabilities.input.image) {
+            const parts: Array<
+              | { type: "text"; text: string }
+              | { type: "file"; url: string; mediaType: string; filename?: string }
+            > = []
+            for (const attachment of media) {
+              if (!attachment.mime.startsWith("image/")) {
+                parts.push({
+                  type: "file",
+                  url: attachment.url,
+                  mediaType: attachment.mime,
+                  filename: attachment.filename,
+                })
+                continue
+              }
+              const filepath = yield* persistVisionImage(attachment.url)
+              parts.push({
+                type: "text",
+                text: filepath
+                  ? visionDelegationText(filepath, attachment.filename)
+                  : `[Attached ${attachment.mime}: ${attachment.filename ?? "file"}]`,
+              })
+            }
+            result.push({
+              id: MessageID.ascending(),
+              role: "user",
+              parts: [{ type: "text" as const, text: SYNTHETIC_ATTACHMENT_PROMPT }, ...parts],
+            })
+          } else {
+            result.push({
+              id: MessageID.ascending(),
+              role: "user",
+              parts: [
+                {
+                  type: "text" as const,
+                  text: SYNTHETIC_ATTACHMENT_PROMPT,
+                },
+                ...media.map((attachment) => ({
+                  type: "file" as const,
+                  url: attachment.url,
+                  mediaType: attachment.mime,
+                  filename: attachment.filename,
+                })),
+              ],
+            })
+          }
         }
       }
     }
@@ -417,7 +483,7 @@ export const toModelMessagesEffect = Effect.fnUntraced(function* (
 export function toModelMessages(
   input: WithParts[],
   model: Provider.Model,
-  options?: { stripMedia?: boolean; toolOutputMaxChars?: number },
+  options?: { stripMedia?: boolean; toolOutputMaxChars?: number; visionDelegation?: boolean },
 ): Promise<ModelMessage[]> {
   return Effect.runPromise(toModelMessagesEffect(input, model, options))
 }

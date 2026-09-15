@@ -15,6 +15,7 @@ import PROMPT_EXPLORE from "./prompt/explore.txt"
 import PROMPT_RESEARCH from "./prompt/research.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
+import PROMPT_VISION from "./prompt/vision.txt"
 import { Permission } from "@/permission"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@opencode-ai/core/global"
@@ -280,6 +281,27 @@ const layer = Layer.effect(
               user,
             ),
             prompt: PROMPT_SUMMARY,
+          },
+          vision: {
+            name: "vision",
+            description: "Describes image files for models that cannot view images directly. Use this when a model without image support needs to understand an attached image.",
+            mode: "subagent",
+            native: true,
+            model: {
+              providerID: ProviderV2.ID.make("opencode"),
+              modelID: ModelV2.ID.make("mimo-v2.5-free"),
+            },
+            prompt: PROMPT_VISION,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                read: "allow",
+                external_directory: readonlyExternalDirectory,
+              }),
+              user,
+            ),
+            options: {},
           },
         }
 

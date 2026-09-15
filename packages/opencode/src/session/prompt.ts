@@ -1259,7 +1259,9 @@ const layer = Layer.effect(
               sys.environment(model),
               instruction.system().pipe(Effect.orDie),
               sys.mcp(agent, session.permission),
-              MessageV2.toModelMessagesEffect(msgs, model),
+              MessageV2.toModelMessagesEffect(msgs, model, {
+                  visionDelegation: !model.capabilities.input.image,
+                }),
             ])
             const system = [
               ...env,

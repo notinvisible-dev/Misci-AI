@@ -55,6 +55,7 @@ it.instance("returns default native agents when no config", () =>
     expect(names).toContain("compaction")
     expect(names).toContain("title")
     expect(names).toContain("summary")
+    expect(names).toContain("vision")
   }),
 )
 
@@ -158,6 +159,32 @@ it.instance(
       },
     },
   },
+)
+
+it.instance("vision agent is read-only and uses mimo-v2.5-free", () =>
+  Effect.gen(function* () {
+    const vision = yield* load((svc) => svc.get("vision"))
+    expect(vision).toBeDefined()
+    expect(vision?.mode).toBe("subagent")
+    expect(String(vision?.model?.providerID)).toBe("opencode")
+    expect(String(vision?.model?.modelID)).toBe("mimo-v2.5-free")
+    expect(evalPerm(vision, "edit")).toBe("deny")
+    expect(evalPerm(vision, "write")).toBe("deny")
+    expect(evalPerm(vision, "bash")).toBe("deny")
+    expect(evalPerm(vision, "read")).toBe("allow")
+    expect(
+      Permission.evaluate("external_directory", path.join(Global.Path.tmp, "vision", "abc.png"), vision!.permission)
+        .action,
+    ).toBe("allow")
+  }),
+)
+
+it.instance("vision agent asks for external directories outside the whitelist", () =>
+  Effect.gen(function* () {
+    const vision = yield* load((svc) => svc.get("vision"))
+    expect(vision).toBeDefined()
+    expect(Permission.evaluate("external_directory", "/some/other/path", vision!.permission).action).toBe("ask")
+  }),
 )
 
 it.instance("general agent denies todo tools", () =>

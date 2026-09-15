@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test"
 import { SessionV1 } from "@opencode-ai/core/v1/session"
 import { APICallError } from "ai"
+import fs from "fs/promises"
+import path from "path"
+import { Global } from "@opencode-ai/core/global"
 import { MessageV2 } from "../../src/session/message-v2"
 import { ProviderTransform } from "@/provider/transform"
 import type { Provider } from "@/provider/provider"
@@ -315,6 +318,71 @@ describe("session.message-v2.toModelMessage", () => {
           { type: "text", text: "What did we do so far?" },
           { type: "text", text: "The following tool was executed by the user" },
         ],
+      },
+    ])
+  })
+
+  test("persists image files and delegates to the vision subagent for non-vision models", async () => {
+    const messageID = "m-user"
+    const base64 = Buffer.from("fake-png-bytes").toString("base64")
+    const input: SessionV1.WithParts[] = [
+      {
+        info: userInfo(messageID),
+        parts: [
+          {
+            ...basePart(messageID, "p1"),
+            type: "file",
+            mime: "image/png",
+            filename: "img.png",
+            url: `data:image/png;base64,${base64}`,
+          },
+        ] as SessionV1.Part[],
+      },
+    ]
+
+    const messages = await MessageV2.toModelMessages(input, model, { visionDelegation: true })
+    expect(messages).toHaveLength(1)
+    expect(typeof messages[0]!.content).toBe("object")
+    const content = messages[0]!.content as Array<{ type: string; text?: string }>
+    expect(content.every((part) => part.type === "text")).toBe(true)
+    const text = content.map((part) => (part.type === "text" ? part.text ?? "" : "")).join("\n")
+    expect(text).toContain('Spawn the "vision" subagent via the Task tool (subagent_type: "vision")')
+    expect(text).toContain('Spawn the "vision" subagent via the Task tool (subagent_type: "vision")')
+
+    const match = text.match(/at: (\S+)\.\s/)
+    expect(match).not.toBeNull()
+    const persistedPath = match![1]!
+    const persisted = await fs.readFile(persistedPath, "utf8")
+    expect(persisted).toBe("fake-png-bytes")
+    expect(persistedPath.startsWith(path.join(Global.Path.tmp, "vision"))).toBe(true)
+  })
+
+  test("keeps image files inline for vision models", async () => {
+    const messageID = "m-user"
+    const input: SessionV1.WithParts[] = [
+      {
+        info: userInfo(messageID),
+        parts: [
+          {
+            ...basePart(messageID, "p1"),
+            type: "file",
+            mime: "image/png",
+            filename: "img.png",
+            url: `data:image/png;base64,${Buffer.from("fake-png-bytes").toString("base64")}`,
+          },
+        ] as SessionV1.Part[],
+      },
+    ]
+
+    const modelWithVision: Provider.Model = { ...model, capabilities: { ...model.capabilities, input: { ...model.capabilities.input, image: true } } }
+    const messages = await MessageV2.toModelMessages(input, modelWithVision, { visionDelegation: true })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]!.content).toEqual([
+      {
+        type: "file",
+        mediaType: "image/png",
+        filename: "img.png",
+        data: `data:image/png;base64,${Buffer.from("fake-png-bytes").toString("base64")}`,
       },
     ])
   })
