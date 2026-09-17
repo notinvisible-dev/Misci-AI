@@ -1654,6 +1654,11 @@ export function schema(model: Provider.Model, schema: JSONSchema7): JSONSchema7 
 }
 
 export function reasoningVariants(model: ModelsDev.Model, target: Provider.Model): Provider.Model["variants"] {
+  // opencode/zen serves big-pickle through its OpenAI-compatible endpoint with
+  // GLM-style `reasoning_content`, but declares no reasoning_options, so the
+  // toggle is synthesized from the api id instead.
+  if (target.api.id.toLowerCase().includes("big-pickle") && target.api.npm === "@ai-sdk/openai-compatible")
+    return nonEmptyVariants(reasoningToggle(target))
   const options = model.reasoning_options
   if (options === undefined) return
   if (options.length === 0) return {}
@@ -1721,7 +1726,7 @@ function reasoningToggle(model: Provider.Model): NonNullable<Provider.Model["var
   if (model.api.npm === "@ai-sdk/openai-compatible") {
     const id = model.api.id.toLowerCase()
     const glm52 = id.includes("5.2") || id.includes("5-2") || id.includes("5p2")
-    if (id.includes("glm") && !id.includes("5.3") && !glm52)
+    if ((id.includes("glm") && !id.includes("5.3") && !glm52) || id.includes("big-pickle"))
       return {
         none: { thinking: { type: "disabled" } },
         high: { thinking: { type: "enabled" } },

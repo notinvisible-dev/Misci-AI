@@ -3318,6 +3318,19 @@ describe("ProviderTransform.reasoningVariants", () => {
     expect(ProviderTransform.reasoningVariants(model([]), target("@ai-sdk/openai"))).toEqual({})
   })
 
+  test("synthesizes a toggle-off variant for the zen big-pickle model", () => {
+    expect(
+      ProviderTransform.reasoningVariants(model([]), target("@ai-sdk/openai-compatible", "big-pickle")),
+    ).toEqual({
+      none: { thinking: { type: "disabled" } },
+      high: { thinking: { type: "enabled" } },
+    })
+  })
+
+  test("does not synthesize a toggle for big-pickle outside the zen openai-compatible endpoint", () => {
+    expect(ProviderTransform.reasoningVariants(model([]), target("@ai-sdk/openai", "big-pickle"))).toEqual({})
+  })
+
   test("synthesizes a toggle-off variant for openai-compatible GLM models", () => {
     expect(
       ProviderTransform.reasoningVariants(
