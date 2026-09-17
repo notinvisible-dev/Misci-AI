@@ -105,6 +105,9 @@ export const dict = {
   "ui.promptInput.chooseAgent": "에이전트 선택",
   "ui.promptInput.chooseModel": "모델 선택",
   "ui.promptInput.chooseVariant": "모델 변형 선택",
+  "ui.promptInput.reasoningToggle": "Toggle reasoning",
+  "ui.promptInput.chatting": "Chatting",
+  "ui.promptInput.reasoning": "Reasoning",
   "ui.promptInput.send": "전송",
   "ui.promptInput.stop": "중지",
 

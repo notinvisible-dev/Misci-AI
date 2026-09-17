@@ -136,6 +136,9 @@ export const dict = {
   "ui.promptInput.chooseAgent": "Выбрать агента",
   "ui.promptInput.chooseModel": "Выбрать модель",
   "ui.promptInput.chooseVariant": "Выбрать вариант модели",
+  "ui.promptInput.reasoningToggle": "Toggle reasoning",
+  "ui.promptInput.chatting": "Chatting",
+  "ui.promptInput.reasoning": "Reasoning",
   "ui.promptInput.send": "Отправить",
   "ui.promptInput.stop": "Остановить",
 

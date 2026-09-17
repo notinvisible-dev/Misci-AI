@@ -1715,6 +1715,18 @@ function reasoningToggle(model: Provider.Model): NonNullable<Provider.Model["var
       none: { thinking: { type: "disabled" } },
       high: { thinking: { type: "enabled" } },
     }
+  // Z.AI's OpenAI-compatible endpoint disables GLM thinking via `thinking.type`.
+  // GLM-5.3/5.3-FLASH force thinking and reject `disabled`; GLM-5.2 already
+  // exposes native reasoning_effort variants instead of a toggle.
+  if (model.api.npm === "@ai-sdk/openai-compatible") {
+    const id = model.api.id.toLowerCase()
+    const glm52 = id.includes("5.2") || id.includes("5-2") || id.includes("5p2")
+    if (id.includes("glm") && !id.includes("5.3") && !glm52)
+      return {
+        none: { thinking: { type: "disabled" } },
+        high: { thinking: { type: "enabled" } },
+      }
+  }
   return {}
 }
 

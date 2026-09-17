@@ -128,6 +128,9 @@ export const dict = {
   "ui.promptInput.chooseAgent": "エージェントを選択",
   "ui.promptInput.chooseModel": "モデルを選択",
   "ui.promptInput.chooseVariant": "モデルバリアントを選択",
+  "ui.promptInput.reasoningToggle": "Toggle reasoning",
+  "ui.promptInput.chatting": "Chatting",
+  "ui.promptInput.reasoning": "Reasoning",
   "ui.promptInput.send": "送信",
   "ui.promptInput.stop": "停止",
 

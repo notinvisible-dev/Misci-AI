@@ -9,6 +9,7 @@ import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { IconButtonV2 } from "@opencode-ai/ui/v2/icon-button-v2"
 import { KeybindV2 } from "@opencode-ai/ui/v2/keybind-v2"
 import { MenuV2 } from "@opencode-ai/ui/v2/menu-v2"
+import { SegmentedControlItemV2, SegmentedControlV2 } from "@opencode-ai/ui/v2/segmented-control-v2"
 import { TooltipV2 } from "@opencode-ai/ui/v2/tooltip-v2"
 import { AttachmentCardV2 } from "../attachment-card-v2"
 import { CommentCardV2 } from "../comment-card-v2"
@@ -23,6 +24,7 @@ import type {
 } from "./types"
 import type { PromptInputV2Interaction, PromptInputV2SelectControl } from "./interaction"
 import "./attachments.css"
+import "./reasoning.css"
 
 export type {
   PromptInputV2Attachment,
@@ -241,6 +243,25 @@ export function PromptInputV2(props: PromptInputV2Props) {
               }
             >
               {props.modelControl}
+            </Show>
+            <Show when={view.reasoning} keyed>
+              {(control) => (
+                <SegmentedControlV2
+                  class="prompt-input-v2-reasoning-control"
+                  aria-label={i18n.t("ui.promptInput.reasoningToggle")}
+                  value={control.chatting() ? "chatting" : "reasoning"}
+                  onChange={(value) => {
+                    if (value === "chatting" || value === "reasoning") control.onSelect(value === "chatting")
+                  }}
+                >
+                  <SegmentedControlItemV2 value="chatting">
+                    {i18n.t("ui.promptInput.chatting")}
+                  </SegmentedControlItemV2>
+                  <SegmentedControlItemV2 value="reasoning">
+                    {i18n.t("ui.promptInput.reasoning")}
+                  </SegmentedControlItemV2>
+                </SegmentedControlV2>
+              )}
             </Show>
             <Show when={(props.variantControlVisible ?? true) && view.variant} keyed>
               {(control) => (

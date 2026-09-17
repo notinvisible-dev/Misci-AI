@@ -108,6 +108,9 @@ export const dict: Record<Keys, string> = {
   "ui.promptInput.chooseAgent": "Velg agent",
   "ui.promptInput.chooseModel": "Velg modell",
   "ui.promptInput.chooseVariant": "Velg modellvariant",
+  "ui.promptInput.reasoningToggle": "Toggle reasoning",
+  "ui.promptInput.chatting": "Chatting",
+  "ui.promptInput.reasoning": "Reasoning",
   "ui.promptInput.send": "Send",
   "ui.promptInput.stop": "Stopp",
 

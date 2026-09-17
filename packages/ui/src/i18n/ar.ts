@@ -145,6 +145,9 @@ export const dict = {
   "ui.promptInput.chooseAgent": "اختيار وكيل",
   "ui.promptInput.chooseModel": "اختيار نموذج",
   "ui.promptInput.chooseVariant": "اختيار متغير النموذج",
+  "ui.promptInput.reasoningToggle": "Toggle reasoning",
+  "ui.promptInput.chatting": "Chatting",
+  "ui.promptInput.reasoning": "Reasoning",
   "ui.promptInput.send": "إرسال",
   "ui.promptInput.stop": "إيقاف",
 

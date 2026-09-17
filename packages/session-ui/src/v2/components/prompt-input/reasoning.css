@@ -1,0 +1,10 @@
+[data-component="prompt-input-v2"]
+  [data-component="segmented-control-v2"].prompt-input-v2-reasoning-control {
+  width: auto;
+}
+
+[data-component="prompt-input-v2"]
+  [data-component="segmented-control-v2"].prompt-input-v2-reasoning-control
+  [data-slot="segmented-control-v2-item"] {
+  flex: 0 0 auto;
+}

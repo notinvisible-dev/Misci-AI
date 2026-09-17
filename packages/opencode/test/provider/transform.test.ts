@@ -3318,6 +3318,30 @@ describe("ProviderTransform.reasoningVariants", () => {
     expect(ProviderTransform.reasoningVariants(model([]), target("@ai-sdk/openai"))).toEqual({})
   })
 
+  test("synthesizes a toggle-off variant for openai-compatible GLM models", () => {
+    expect(
+      ProviderTransform.reasoningVariants(
+        model([{ type: "toggle" }]),
+        target("@ai-sdk/openai-compatible", "glm-4.7"),
+      ),
+    ).toEqual({
+      none: { thinking: { type: "disabled" } },
+      high: { thinking: { type: "enabled" } },
+    })
+  })
+
+  test("does not synthesize a toggle-off for forced-thinking or effort GLM models", () => {
+    expect(
+      ProviderTransform.reasoningVariants(model([{ type: "toggle" }]), target("@ai-sdk/openai-compatible", "glm-5.3")),
+    ).toBeUndefined()
+    expect(
+      ProviderTransform.reasoningVariants(model([{ type: "toggle" }]), target("@ai-sdk/openai-compatible", "glm-5.2")),
+    ).toBeUndefined()
+    expect(
+      ProviderTransform.reasoningVariants(model([{ type: "toggle" }]), target("@ai-sdk/openai", "glm-4.7")),
+    ).toBeUndefined()
+  })
+
   test.each([
     ["@openrouter/ai-sdk-provider", { reasoning: { effort: "high" } }],
     ["@ai-sdk/anthropic", { thinking: { type: "adaptive" }, effort: "high" }, "claude-opus-4-6"],

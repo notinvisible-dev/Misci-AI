@@ -129,6 +129,9 @@ export const dict = {
   "ui.promptInput.chooseAgent": "เลือกเอเจนต์",
   "ui.promptInput.chooseModel": "เลือกโมเดล",
   "ui.promptInput.chooseVariant": "เลือกรูปแบบโมเดล",
+  "ui.promptInput.reasoningToggle": "Toggle reasoning",
+  "ui.promptInput.chatting": "Chatting",
+  "ui.promptInput.reasoning": "Reasoning",
   "ui.promptInput.send": "ส่ง",
   "ui.promptInput.stop": "หยุด",
 

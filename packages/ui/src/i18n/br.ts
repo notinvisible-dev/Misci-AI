@@ -133,6 +133,9 @@ export const dict = {
   "ui.promptInput.chooseAgent": "Escolher agente",
   "ui.promptInput.chooseModel": "Escolher modelo",
   "ui.promptInput.chooseVariant": "Escolher variante do modelo",
+  "ui.promptInput.reasoningToggle": "Toggle reasoning",
+  "ui.promptInput.chatting": "Chatting",
+  "ui.promptInput.reasoning": "Reasoning",
   "ui.promptInput.send": "Enviar",
   "ui.promptInput.stop": "Parar",
 

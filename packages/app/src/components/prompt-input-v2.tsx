@@ -400,6 +400,13 @@ export function usePromptInputV2Controller(props: PromptInputV2ControllerProps):
         onSelect: (value) => props.controls.model.selection.variant.set(value === "default" ? undefined : value),
         keybind: () => command.keybindParts("model.variant.cycle"),
       },
+      get reasoning() {
+        if (!props.controls.model.selection.variant.list().includes("none")) return undefined
+        return {
+          chatting: () => props.controls.model.selection.variant.current() === "none",
+          onSelect: (chatting: boolean) => props.controls.model.selection.variant.set(chatting ? "none" : undefined),
+        }
+      },
       submit: {
         stopping,
         working,

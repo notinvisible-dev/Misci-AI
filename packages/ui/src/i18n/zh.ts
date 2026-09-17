@@ -131,6 +131,9 @@ export const dict = {
   "ui.promptInput.chooseAgent": "选择智能体",
   "ui.promptInput.chooseModel": "选择模型",
   "ui.promptInput.chooseVariant": "选择模型变体",
+  "ui.promptInput.reasoningToggle": "Toggle reasoning",
+  "ui.promptInput.chatting": "Chatting",
+  "ui.promptInput.reasoning": "Reasoning",
   "ui.promptInput.send": "发送",
   "ui.promptInput.stop": "停止",
 
