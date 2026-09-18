@@ -136,6 +136,8 @@ function ready(directory: string) {
   const file = path.join(directory, `.watcher-${Math.random().toString(36).slice(2)}`)
   return Effect.gen(function* () {
     const fs = yield* FSUtil.Service
+    const watcher = yield* Watcher.Service
+    yield* watcher.acquire
     yield* eventuallyUpdate(
       (event) => event.file === file,
       () => fs.writeFileString(file, `ready-${Math.random()}`),

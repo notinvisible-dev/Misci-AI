@@ -4,7 +4,7 @@ export * as Watcher from "./watcher"
 import { createWrapper } from "@parcel/watcher/wrapper"
 import type ParcelWatcher from "@parcel/watcher"
 import { makeLocationNode } from "../effect/app-node"
-import { Cause, Context, Effect, Layer } from "effect"
+import { Cause, Context, Effect, Layer, Ref, Semaphore } from "effect"
 import { FileSystemWatcher } from "@opencode-ai/schema/filesystem-watcher"
 import path from "path"
 import { Config } from "../config"
@@ -50,14 +50,21 @@ function protecteds(dir: string) {
 
 export const hasNativeBinding = () => !!watcher()
 
-export interface Interface {}
+export interface Interface {
+  /** Acquires the recursive project-tree watch that requires a working session. */
+  readonly acquire: Effect.Effect<void>
+  /** Releases the recursive project-tree watch that requires a working session. */
+  readonly release: Effect.Effect<void>
+}
 
 export class Service extends Context.Service<Service, Interface>()("@opencode/v2/FileWatcher") {}
+
+const noop = () => Service.of({ acquire: Effect.void, release: Effect.void })
 
 const layer = Layer.effect(
   Service,
   Effect.gen(function* () {
-    if (yield* Flag.OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER) return Service.of({})
+    if (yield* Flag.OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER) return noop()
 
     const backend = getBackend()
     const location = yield* Location.Service
@@ -66,11 +73,11 @@ const layer = Layer.effect(
         directory: location.directory,
         platform: process.platform,
       })
-      return Service.of({})
+      return noop()
     }
 
     const w = watcher()
-    if (!w) return Service.of({})
+    if (!w) return noop()
 
     yield* Effect.logInfo("watcher backend", { directory: location.directory, platform: process.platform, backend })
     const events = yield* EventV2.Service
@@ -106,11 +113,50 @@ const layer = Layer.effect(
     const config = (yield* (yield* Config.Service).entries())
       .filter((entry): entry is Config.Document => entry.type === "document")
       .flatMap((item) => item.info.watcher?.ignore ?? [])
-    if (location.vcs && (yield* Flag.OPENCODE_EXPERIMENTAL_FILEWATCHER)) {
-      yield* Effect.forkScoped(
-        subscribe(location.directory, [...Ignore.PATTERNS, ...config, ...protecteds(location.directory)]),
+    const watchTree = !!location.vcs && (yield* Flag.OPENCODE_EXPERIMENTAL_FILEWATCHER)
+    const treeIgnore = [...Ignore.PATTERNS, ...config, ...protecteds(location.directory)]
+    // The recursive project-tree watch is the expensive one on large or busy
+    // trees, so it stays suspended until a session actually starts working.
+    const treeSubscription = yield* Ref.make<ParcelWatcher.AsyncSubscription | undefined>(undefined)
+    const activeSessions = yield* Ref.make(0)
+    const lock = yield* Semaphore.make(1)
+
+    const activate = Effect.fnUntraced(function* () {
+      if (!watchTree) return
+      if ((yield* Ref.get(treeSubscription)) !== undefined) return
+      const pending = w.subscribe(location.directory, callback, { ignore: treeIgnore, backend })
+      const subscription = yield* Effect.promise(() => pending).pipe(
+        Effect.timeout(SUBSCRIBE_TIMEOUT_MS),
+        Effect.catchCause((cause) => {
+          pending.then((subscription) => subscription.unsubscribe()).catch(() => {})
+          return Effect.logError("failed to subscribe", {
+            directory: location.directory,
+            cause: Cause.pretty(cause),
+          }).pipe(Effect.as(undefined))
+        }),
       )
-    }
+      if (subscription) yield* Ref.set(treeSubscription, subscription)
+    })
+
+    const deactivate = Effect.fnUntraced(function* () {
+      const subscription = yield* Ref.getAndSet(treeSubscription, undefined)
+      if (subscription) yield* Effect.promise(() => subscription.unsubscribe()).pipe(Effect.ignore)
+    })
+
+    yield* Effect.addFinalizer(() => deactivate().pipe(Effect.ignore))
+
+    const setActive = Effect.fn("Watcher.setActive")(function* (active: boolean) {
+      if (!watchTree) return
+      yield* lock.withPermits(1)(
+        Effect.gen(function* () {
+          const next = yield* Ref.updateAndGet(activeSessions, (count) =>
+            active ? count + 1 : Math.max(0, count - 1),
+          )
+          if (active && next === 1) return yield* activate()
+          if (!active && next === 0) return yield* deactivate()
+        }),
+      )
+    })
 
     if (location.vcs?.type === "git") {
       const resolved = (yield* git.repo.discover(location.directory))?.gitDirectory
@@ -123,11 +169,11 @@ const layer = Layer.effect(
       }
     }
 
-    return Service.of({})
+    return Service.of({ acquire: setActive(true), release: setActive(false) })
   }).pipe(
     Effect.catchCause((cause) => {
       return Effect.logError("failed to init watcher service", { cause: Cause.pretty(cause) }).pipe(
-        Effect.as(Service.of({})),
+        Effect.as(noop()),
       )
     }),
   ),
