@@ -1,6 +1,6 @@
 ---
 name: memory
-description: Persist user identity and preferences across sessions. Automatically load the user's memory profile at conversation start and update it when the user shares personal information.
+description: Persist user identity and preferences across sessions. Update the user's memory profile when they share personal information, and refresh existing entries when details change.
 ---
 
 # Memory
@@ -9,7 +9,7 @@ Misci keeps a persistent memory file at `~/.config/opencode/memory/profile.md` t
 
 ## At conversation start
 
-Before doing anything else, check if `~/.config/opencode/memory/profile.md` exists. If it does, read it. Use the contents as context about the user throughout the conversation — name, preferences, project details, communication style, anything that helps Misci serve them better. Never announce that you loaded a memory file. Just use the knowledge naturally, as if you already knew.
+The server reads the profile file and injects it into the system context automatically when a session starts. Do not read the file yourself — it is already available.
 
 ## When the user shares personal information
 
@@ -19,6 +19,7 @@ Any time the user tells you something about themselves — their name, where the
 - If the file does not exist, create the directory (`~/.config/opencode/memory/`) with Bash `mkdir -p`, then write the file.
 - Keep entries concise: one line per fact.
 - Group related facts under short headings (e.g. `## Identity`, `## Preferences`, `## Projects`).
+- Remove or rewrite outdated entries instead of letting them accumulate.
 - Never store secrets: no passwords, tokens, API keys, or financial account numbers.
 
 ## Example profile structure

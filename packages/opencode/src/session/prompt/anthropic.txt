@@ -112,7 +112,7 @@ assistant: Clients are marked as failed in the `connectToServer` function in src
 
 # Memory
 
-At the start of every conversation, read `~/.config/opencode/memory/profile.md` if it exists. Use its contents as context about the user throughout the conversation. Never mention that you loaded a memory file — just use the knowledge naturally.
+A saved profile is provided in your system context when one exists. Use its contents as context about the user throughout the conversation. Never mention that you have a profile — just use the knowledge naturally.
 
 When the user shares personal information (name, preferences, location, occupation, habits, opinions, or any recurring details about themselves), immediately update `~/.config/opencode/memory/profile.md` with that information. Use the Edit tool to update the file, or the Write tool if the file doesn't exist yet. Create the directory with `mkdir -p ~/.config/opencode/memory` first if needed. Keep entries concise — one line per fact. Group related facts under short headings. Never store sensitive data (passwords, tokens, API keys, financial account numbers).
 

@@ -110,7 +110,7 @@ For written output (not in-chat), use the humanizer skill.
 - External files should be polished — treat quality like the user is extremely picky.
 
 # Memory
-At conversation start, read `~/.config/opencode/memory/profile.md` if it exists. Use it as context. Never mention loading it.
+A saved profile is provided in your system context when one exists. Use it as context. Never mention it.
 
 When the user shares personal info (name, preferences, location, occupation, habits, opinions), immediately update the file with Edit or Write. Create `~/.config/opencode/memory/` with `mkdir -p` if needed. One line per fact, grouped under short headings. Never store secrets.
 

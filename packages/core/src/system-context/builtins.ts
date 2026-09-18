@@ -1,5 +1,6 @@
 export * as SystemContextBuiltIns from "./builtins"
 
+import { join } from "path"
 import { makeLocationNode } from "../effect/app-node"
 import { DateTime, Effect, Layer, Schema } from "effect"
 import { Location } from "../location"
@@ -13,6 +14,8 @@ const builtIns = Layer.effectDiscard(
   Effect.gen(function* () {
     const location = yield* Location.Service
     const registry = yield* SystemContextRegistry.Service
+    const fs = yield* FSUtil.Service
+    const global = yield* Global.Service
     const environment = [
       "<env>",
       `  Working directory: ${location.directory}`,
@@ -40,6 +43,26 @@ const builtIns = Layer.effectDiscard(
     ])
 
     yield* registry.register({ key: SystemContext.Key.make("core/builtins"), load: Effect.succeed(context) })
+
+    const memoryKey = SystemContext.Key.make("misci/memory")
+    const memory = yield* fs
+      .readFileStringSafe(join(global.config, "memory", "profile.md"))
+      .pipe(
+        Effect.map((content) => {
+          if (content === undefined || content.trim() === "") return SystemContext.empty
+          return SystemContext.make({
+            key: memoryKey,
+            codec: Schema.toCodecJson(Schema.String),
+            load: Effect.succeed(content),
+            baseline: (content) => ["Here is the user's saved profile:", content].join("\n\n"),
+            update: (_previous, content) =>
+              ["The user's saved profile has been updated:", content].join("\n\n"),
+            removed: () => "The user's saved profile is no longer available.",
+          })
+        }),
+        Effect.catch(() => Effect.succeed(SystemContext.empty)),
+      )
+    yield* registry.register({ key: memoryKey, load: Effect.succeed(memory) })
   }),
 )
 
