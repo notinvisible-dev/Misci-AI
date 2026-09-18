@@ -32,6 +32,10 @@ import {
   createBodyConverter,
   createStreamPartConverter,
   createResponseConverter,
+  forceDisableReasoning,
+  isNoReasoningRequest,
+  stripReasoningFromResponse,
+  stripReasoningStreamPart,
   UsageInfo,
 } from "./provider/provider"
 import { anthropicHelper } from "./provider/anthropic"
@@ -100,6 +104,7 @@ export async function handler(
     const body = await input.request.json()
     const model = opts.parseModel(url, body)
     const variant = opts.parseVariant(url, body)
+    const noReasoning = isNoReasoningRequest(opts.format, body)
     const isStream = opts.parseIsStream(url, body)
     const rawIp = input.request.headers.get("x-real-ip") ?? ""
     const ip = rawIp.includes(":") ? rawIp.split(":").slice(0, 4).join(":") : rawIp
@@ -186,8 +191,8 @@ export async function handler(
 
       const startTimestamp = Date.now()
       const reqUrl = providerInfo.modifyUrl(providerInfo.api, isStream)
-      const reqBody = JSON.stringify(
-        providerInfo.modifyBody({
+      const reqBody = (() => {
+        const converted = providerInfo.modifyBody({
           ...createBodyConverter(opts.format, providerInfo.format)(body),
           model: providerInfo.model,
           ...(() => {
@@ -211,8 +216,10 @@ export async function handler(
               )
             return replacer(providerInfo.payloadModifier ?? {})
           })(),
-        }),
-      )
+        })
+        if (noReasoning) forceDisableReasoning(converted, providerInfo.format)
+        return JSON.stringify(converted)
+      })()
       logger.debug("REQUEST URL: " + reqUrl)
       logger.debug("REQUEST: " + reqBody.substring(0, 300) + "...")
       const isNewInference =
@@ -340,7 +347,8 @@ export async function handler(
       }
 
       const responseConverter = createResponseConverter(providerInfo.format, opts.format)
-      const body = JSON.stringify(responseConverter(json))
+      const converted = responseConverter(json)
+      const body = JSON.stringify(noReasoning ? stripReasoningFromResponse(converted, opts.format) : converted)
       logger.metric({ response_length: body.length })
       logger.debug("RESPONSE: " + body)
       return new Response(body, {
@@ -364,6 +372,7 @@ export async function handler(
         let buffer = ""
         let responseLength = 0
         let timestampFirstByte = 0
+        const passthroughParts: string[] = []
 
         function pump(): Promise<void> {
           return (
@@ -426,14 +435,19 @@ export async function handler(
                 part = part.trim()
                 usageParser.parse(part)
 
+                if (noReasoning && part.length > 0) part = stripReasoningStreamPart(part, providerInfo.format)
+                if (part.length === 0) continue
+
                 if (providerInfo.format !== opts.format) {
                   part = streamConverter(part)
                   c.enqueue(encoder.encode(part + "\n\n"))
+                } else if (noReasoning) {
+                  passthroughParts.push(part)
                 }
               }
 
               if (providerInfo.format === opts.format) {
-                c.enqueue(value)
+                c.enqueue(noReasoning ? encoder.encode(passthroughParts.join("\n\n")) : value)
               }
 
               return pump()

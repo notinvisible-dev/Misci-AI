@@ -226,3 +226,119 @@ export function createResponseConverter(from: ZenData.Format, to: ZenData.Format
     if (to === "oa-compat") return toOaCompatibleResponse(raw)
   }
 }
+
+/**
+ * True when the caller asked for "no reasoning" (chatting) in the request body,
+ * regardless of what the model catalog advertises.
+ */
+export function isNoReasoningRequest(format: ZenData.Format, body: Record<string, any>): boolean {
+  switch (format) {
+    case "oa-compat":
+      return (
+        body.thinking?.type === "disabled" ||
+        body.reasoning_effort === "none" ||
+        body.reasoning?.effort === "none"
+      )
+    case "anthropic":
+      return body.thinking?.type === "disabled" || body.effort === "none"
+    case "openai":
+      return body.reasoning_effort === "none" || body.reasoning?.effort === "none"
+    case "google":
+      return body.generationConfig?.thinkingConfig?.thinkingBudget === 0
+  }
+}
+
+/** Forces reasoning off on the outbound request body for a no-reasoning request. */
+export function forceDisableReasoning(body: Record<string, any>, format: ZenData.Format) {
+  switch (format) {
+    case "oa-compat":
+      body.thinking = { type: "disabled" }
+      delete body.reasoning_effort
+      delete body.reasoning
+      break
+    case "anthropic":
+      delete body.thinking
+      delete body.effort
+      break
+    case "openai":
+      delete body.reasoning_effort
+      delete body.reasoning
+      break
+    case "google":
+      if (body.generationConfig?.thinkingConfig) delete body.generationConfig.thinkingConfig
+      delete body.thinkingConfig
+      break
+  }
+  return body
+}
+
+/** Strips reasoning artifacts from a non-streaming response. */
+export function stripReasoningFromResponse(response: Record<string, any>, format: ZenData.Format) {
+  switch (format) {
+    case "oa-compat":
+    case "openai":
+      for (const choice of response?.choices ?? []) {
+        if (choice.message) {
+          delete choice.message.reasoning_content
+          delete choice.message.reasoning
+        }
+      }
+      break
+    case "anthropic":
+      if (Array.isArray(response?.content))
+        response.content = response.content.filter((block: Record<string, any>) => block.type !== "thinking")
+      break
+    case "google":
+      for (const candidate of response?.candidates ?? []) {
+        if (Array.isArray(candidate.content?.parts))
+          candidate.content.parts = candidate.content.parts.filter((part: Record<string, any>) => !part.thought)
+      }
+      break
+  }
+  return response
+}
+
+/** Strips reasoning artifacts from a single SSE part, returning "" to drop it. */
+export function stripReasoningStreamPart(part: string, format: ZenData.Format): string {
+  if (!part.startsWith("data: ")) return part
+
+  let json: any
+  try {
+    json = JSON.parse(part.slice(6))
+  } catch {
+    return part
+  }
+
+  switch (format) {
+    case "oa-compat":
+    case "openai":
+      for (const choice of json?.choices ?? []) {
+        if (choice.delta) {
+          delete choice.delta.reasoning_content
+          delete choice.delta.reasoning
+        }
+        if (choice.message) {
+          delete choice.message.reasoning_content
+          delete choice.message.reasoning
+        }
+      }
+      return json.error ? part : `data: ${JSON.stringify(json)}`
+    case "anthropic":
+      if (json.type === "content_block_start" && json.content_block?.type === "thinking") return ""
+      if (json.type === "content_block_delta" && json.delta?.type === "thinking_delta") return ""
+      return part
+    case "google": {
+      let changed = false
+      for (const candidate of json?.candidates ?? []) {
+        if (Array.isArray(candidate.content?.parts)) {
+          const kept = candidate.content.parts.filter((item: Record<string, any>) => !item.thought)
+          if (kept.length !== candidate.content.parts.length) {
+            candidate.content.parts = kept
+            changed = true
+          }
+        }
+      }
+      return changed ? `data: ${JSON.stringify(json)}` : part
+    }
+  }
+}
