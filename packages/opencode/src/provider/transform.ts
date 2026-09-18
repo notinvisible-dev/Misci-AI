@@ -1653,11 +1653,28 @@ export function schema(model: Provider.Model, schema: JSONSchema7): JSONSchema7 
   return schema
 }
 
+function interleavedField(interleaved: Provider.Model["capabilities"]["interleaved"]): string | undefined {
+  return typeof interleaved === "object" && interleaved !== null ? interleaved.field : undefined
+}
+
 export function reasoningVariants(model: ModelsDev.Model, target: Provider.Model): Provider.Model["variants"] {
-  // opencode/zen serves big-pickle through its OpenAI-compatible endpoint with
-  // GLM-style `reasoning_content`, but declares no reasoning_options, so the
-  // toggle is synthesized from the api id instead.
-  if (target.api.id.toLowerCase().includes("big-pickle") && target.api.npm === "@ai-sdk/openai-compatible")
+  // opencode/zen serves GLM-style free models with the OpenAI-compatible
+  // endpoint: reasoning enabled, no reasoning_options, and reasoning content
+  // streamed inline under reasoning_content. Synthesize a none/high toggle so
+  // every free model gets a working off-switch regardless of catalog; the zen
+  // gateway force-disables reasoning for no-reasoning requests. GLM-5.3/5.2
+  // are excluded: 5.3 forces thinking and rejects disabled, 5.2 already
+  // exposes native reasoning_effort variants.
+  const id = target.api.id.toLowerCase()
+  const glm52 = id.includes("5.2") || id.includes("5-2") || id.includes("5p2")
+  if (
+    target.api.npm === "@ai-sdk/openai-compatible" &&
+    model.reasoning === true &&
+    (model.reasoning_options?.length ?? 0) === 0 &&
+    interleavedField(target.capabilities.interleaved) === "reasoning_content" &&
+    !id.includes("5.3") &&
+    !glm52
+  )
     return nonEmptyVariants(reasoningToggle(target))
   const options = model.reasoning_options
   if (options === undefined) return
@@ -1726,7 +1743,8 @@ function reasoningToggle(model: Provider.Model): NonNullable<Provider.Model["var
   if (model.api.npm === "@ai-sdk/openai-compatible") {
     const id = model.api.id.toLowerCase()
     const glm52 = id.includes("5.2") || id.includes("5-2") || id.includes("5p2")
-    if ((id.includes("glm") && !id.includes("5.3") && !glm52) || id.includes("big-pickle"))
+    const glmStyle = interleavedField(model.capabilities.interleaved) === "reasoning_content" && !id.includes("5.3") && !glm52
+    if ((id.includes("glm") && !id.includes("5.3") && !glm52) || id.includes("big-pickle") || glmStyle)
       return {
         none: { thinking: { type: "disabled" } },
         high: { thinking: { type: "enabled" } },
