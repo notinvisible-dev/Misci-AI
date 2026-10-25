@@ -289,7 +289,7 @@ const layer = Layer.effect(
             native: true,
             model: {
               providerID: ProviderV2.ID.make("opencode"),
-              modelID: ModelV2.ID.make("mimo-v2.5-free"),
+              modelID: ModelV2.ID.make("space-bunny-free"),
             },
             prompt: PROMPT_VISION,
             permission: Permission.merge(

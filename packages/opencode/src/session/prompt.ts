@@ -63,6 +63,10 @@ globalThis.AI_SDK_LOG_WARNINGS = false
 const decodeMessageInfo = Schema.decodeUnknownExit(SessionV1.Info)
 const decodeMessagePart = Schema.decodeUnknownExit(SessionV1.Part)
 const MAX_MCP_RESOURCE_BLOB_BYTES = 10 * 1024 * 1024
+/** Fallback for `agent.steps`, which every built-in agent leaves unset. */
+const DEFAULT_MAX_STEPS = 100
+/** Wall-clock bound for a single drain, independent of how slow its steps are. */
+const MAX_DRAIN_DURATION = 2 * 60 * 60 * 1000
 const SUPPORTED_MCP_RESOURCE_ATTACHMENT_MIMES = new Set([
   "application/pdf",
   "image/gif",
@@ -1083,6 +1087,7 @@ const layer = Layer.effect(
         const ctx = yield* InstanceState.context
         let structured: unknown
         let step = 0
+        const deadline = Date.now() + MAX_DRAIN_DURATION
         const session = yield* sessions.get(sessionID).pipe(Effect.orDie)
 
         while (true) {
@@ -1108,12 +1113,12 @@ const layer = Layer.effect(
               (part) => part.type === "tool" && !part.metadata?.providerExecuted && !isOrphanedInterruptedTool(part),
             ) ?? false
 
-          if (
-            lastAssistant?.finish &&
-            !["tool-calls"].includes(lastAssistant.finish) &&
-            !hasToolCalls &&
-            lastAssistant.parentID === lastUser.id
-          ) {
+          // The loop keeps running only while there is work to send back: tool
+          // results, or a queued subtask/compaction. Gating on the provider's
+          // finish reason instead meant a turn that reported "tool-calls" but
+          // emitted no tool part kept the loop alive with nothing to feed back,
+          // and a turn that ended without a finish reason was never terminal.
+          if (!hasToolCalls && !tasks.length && lastAssistant?.parentID === lastUser.id) {
             const orphan = lastAssistantMsg?.parts.find(
               (part): part is SessionV1.ToolPart => part.type === "tool" && isOrphanedInterruptedTool(part),
             )
@@ -1126,6 +1131,25 @@ const layer = Layer.effect(
               })
             }
             yield* Effect.logInfo("exiting loop", { "session.id": sessionID })
+            break
+          }
+
+          // A drain is one uninterrupted run. A model that keeps thinking or
+          // re-running tools would otherwise hold the session busy for as long
+          // as it likes, and the step budget alone cannot catch that when the
+          // individual steps are slow.
+          if (Date.now() > deadline) {
+            yield* Effect.logWarning("loop exceeded its time budget", {
+              "session.id": sessionID,
+              step,
+              "budget.ms": MAX_DRAIN_DURATION,
+            })
+            yield* events.publish(Session.Event.Error, {
+              sessionID,
+              error: new NamedError.Unknown({
+                message: `Stopped after ${Math.round(MAX_DRAIN_DURATION / 60000)} minutes and ${step} steps. Send another message to continue.`,
+              }).toObject(),
+            })
             break
           }
 
@@ -1175,7 +1199,7 @@ const layer = Layer.effect(
             yield* events.publish(Session.Event.Error, { sessionID, error: error.toObject() })
             throw error
           }
-          const maxSteps = agent.steps ?? Infinity
+          const maxSteps = agent.steps ?? DEFAULT_MAX_STEPS
           const isLastStep = step >= maxSteps
           msgs = yield* SessionReminders.apply({ messages: msgs, agent, session }).pipe(
             Effect.provideService(RuntimeFlags.Service, flags),
@@ -1327,6 +1351,17 @@ const layer = Layer.effect(
                 auto: true,
                 overflow: !handle.message.finish,
               })
+            }
+            // The step budget is enforced here, not just announced through
+            // MAX_STEPS_PROMPT, so a model that keeps calling tools past the
+            // limit still ends the run.
+            if (isLastStep) {
+              yield* Effect.logWarning("loop reached the step limit", {
+                "session.id": sessionID,
+                step,
+                maxSteps,
+              })
+              return "break" as const
             }
             return "continue" as const
           }).pipe(

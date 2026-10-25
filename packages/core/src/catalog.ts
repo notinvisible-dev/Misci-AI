@@ -222,9 +222,16 @@ const layer = Layer.effect(
             }
           }
 
+          const available = yield* result.model.available()
+          // Space Bunny is the fork's preferred default: free, no API key, and the
+          // most evenly featured model in the catalog. Mirrors the legacy
+          // Provider.sort priority in packages/opencode/src/provider/provider.ts.
+          const preferred = available.find((model) => model.id.includes("space-bunny"))
+          if (preferred) return preferred
+
           return Option.getOrUndefined(
             pipe(
-              yield* result.model.available(),
+              available,
               Array.sortWith((item) => item.time.released, Order.flip(Order.Number)),
               Array.head,
             ),

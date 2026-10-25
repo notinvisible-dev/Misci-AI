@@ -1988,7 +1988,7 @@ const layer = Layer.effect(
   }),
 )
 
-const priority = ["big-pickle"]
+const priority = ["space-bunny"]
 const smallModelFamilyPriority = ["gemini-flash", "gpt-nano", "claude-haiku"]
 export function sort<T extends { id: string }>(models: T[]) {
   return sortBy(

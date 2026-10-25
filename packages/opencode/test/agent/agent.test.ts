@@ -161,13 +161,13 @@ it.instance(
   },
 )
 
-it.instance("vision agent is read-only and uses mimo-v2.5-free", () =>
+it.instance("vision agent is read-only and uses space-bunny-free", () =>
   Effect.gen(function* () {
     const vision = yield* load((svc) => svc.get("vision"))
     expect(vision).toBeDefined()
     expect(vision?.mode).toBe("subagent")
     expect(String(vision?.model?.providerID)).toBe("opencode")
-    expect(String(vision?.model?.modelID)).toBe("mimo-v2.5-free")
+    expect(String(vision?.model?.modelID)).toBe("space-bunny-free")
     expect(evalPerm(vision, "edit")).toBe("deny")
     expect(evalPerm(vision, "write")).toBe("deny")
     expect(evalPerm(vision, "bash")).toBe("deny")

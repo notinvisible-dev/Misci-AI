@@ -257,6 +257,24 @@ describe("CatalogV2", () => {
     }),
   )
 
+  it.effect("prefers space bunny over a newer available model", () =>
+    Effect.gen(function* () {
+      const catalog = yield* Catalog.Service
+      const providerID = ProviderV2.ID.make("opencode")
+      yield* catalog.transform((catalog) => {
+        catalog.provider.update(providerID, () => {})
+        catalog.model.update(providerID, ModelV2.ID.make("space-bunny-free"), (model) => {
+          model.time.released = 1000
+        })
+        catalog.model.update(providerID, ModelV2.ID.make("new"), (model) => {
+          model.time.released = 2000
+        })
+      })
+
+      expect((yield* catalog.model.default())?.id).toBe(ModelV2.ID.make("space-bunny-free"))
+    }),
+  )
+
   it.effect("uses a transform-provided default model until that transform is replaced", () =>
     Effect.gen(function* () {
       const catalog = yield* Catalog.Service
