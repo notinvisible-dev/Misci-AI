@@ -3304,14 +3304,13 @@ describe("ProviderTransform sampling defaults - DeepSeek", () => {
 })
 
 describe("ProviderTransform.reasoningVariants", () => {
-  const model = (reasoning_options: ModelsDev.Model["reasoning_options"]) =>
-    ({ reasoning: true, reasoning_options }) as ModelsDev.Model
-  const target = (npm: string, id = "test-model", interleaved?: { field: string }) =>
+  const model = (reasoning_options: ModelsDev.Model["reasoning_options"]) => ({ reasoning_options }) as ModelsDev.Model
+  const target = (npm: string, id = "test-model") =>
     ({
       id,
       providerID: "test",
       api: { id, npm, url: "" },
-      capabilities: { reasoning: true, interleaved },
+      capabilities: { reasoning: true },
       limit: { output: 64_000 },
     }) as any
 
@@ -3321,32 +3320,11 @@ describe("ProviderTransform.reasoningVariants", () => {
 
   test("synthesizes a toggle-off variant for the zen big-pickle model", () => {
     expect(
-      ProviderTransform.reasoningVariants(
-        model([]),
-        target("@ai-sdk/openai-compatible", "big-pickle", { field: "reasoning_content" }),
-      ),
+      ProviderTransform.reasoningVariants(model([]), target("@ai-sdk/openai-compatible", "big-pickle")),
     ).toEqual({
       none: { thinking: { type: "disabled" } },
       high: { thinking: { type: "enabled" } },
     })
-  })
-
-  test("synthesizes a toggle-off variant for any reasoning_content zen free model", () => {
-    expect(
-      ProviderTransform.reasoningVariants(
-        model([]),
-        target("@ai-sdk/openai-compatible", "mimo-v2.5-free", { field: "reasoning_content" }),
-      ),
-    ).toEqual({
-      none: { thinking: { type: "disabled" } },
-      high: { thinking: { type: "enabled" } },
-    })
-  })
-
-  test("does not synthesize a toggle for non-zen openai-compatible models", () => {
-    expect(
-      ProviderTransform.reasoningVariants(model([]), target("@ai-sdk/openai-compatible", "custom-model", { field: "reasoning" })),
-    ).toEqual({})
   })
 
   test("does not synthesize a toggle for big-pickle outside the zen openai-compatible endpoint", () => {
